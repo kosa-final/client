@@ -1,8 +1,10 @@
 <template>
   <header class="header">
     <nav>
-        <a class="logo" href="/">CLICK PIC</a>
+      <a class="logo" href="/">CLICK PIC</a>
+      <router-link to="/login">
         <button class="btn">LOGIN</button> 
+      </router-link>
     </nav>
   </header>
 </template>
