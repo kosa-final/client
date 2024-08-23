@@ -27,13 +27,23 @@
         <input class="btn btn-large btn-danger" type="button" id="buttonLeaveSession" @click="leaveSession"
           value="Leave session" />
       </div>
-      <div id="main-video" class="col-md-6">
+      <!-- <div id="main-video" class="col-md-6">
         <user-video :stream-manager="mainStreamManager" />
-      </div>
+      </div> -->
       <div id="video-container" class="col-md-6">
-        <user-video :stream-manager="publisher" @click.native="updateMainVideoStreamManager(publisher)" />
-        <user-video v-for="sub in subscribers" :key="sub.stream.connection.connectionId" :stream-manager="sub"
-          @click.native="updateMainVideoStreamManager(sub)" />
+        <table>
+          <tr>
+            <td>
+              <user-video :stream-manager="publisher" @click.native="updateMainVideoStreamManager(publisher)" />
+            </td>
+          </tr>
+          <tr>
+            <td>
+            <user-video v-for="sub in subscribers" :key="sub.stream.connection.connectionId" :stream-manager="sub"
+             @click.native="updateMainVideoStreamManager(sub)" />
+            </td>
+          </tr>
+        </table>
       </div>
     </div>
   </div>
@@ -42,11 +52,11 @@
 <script>
 import axios from "axios";
 import { OpenVidu } from "openvidu-browser";
-import UserVideo from "@/components/UserVideo.vue";
+import UserVideo from "@/components/video/UserVideo.vue";
 
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
-const APPLICATION_SERVER_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000/';
+const APPLICATION_SERVER_URL = process.env.NODE_ENV === 'production' ? '' : 'https://firefour.p-e.kr/';
 
 export default {
   name: "App",
@@ -196,3 +206,7 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+
+</style>

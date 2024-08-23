@@ -5,7 +5,7 @@ import Home from '@/views/HomePage.vue';
 import Select from '@/views/SelectPage.vue'; 
 import Make from '@/views/MakePage.vue'; 
 import Enter from '@/views/EnterPage.vue'; 
-import UserVideo from '@/components/UserVideo.vue'; 
+import UserVideo from '@/components/video/UserVideo.vue';
 
 Vue.use(Router);
 
@@ -35,7 +35,7 @@ export default new Router({
   {
     path: '/uservideo',
     name: 'UserVideo',
-    component: UserVideo
-  }
+    component: UserVideo, // UserVideo 컴포넌트로 라우팅
+  },
 ]
 });
