@@ -57,7 +57,7 @@ import UserVideo from "@/components/video/UserVideo.vue";
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
 // const APPLICATION_SERVER_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000/';
-const APPLICATION_SERVER_URL = process.env.NODE_ENV === 'production' ? '' : 'https://firefour.p-e.kr/';
+const APPLICATION_SERVER_URL = 'https://firefour.p-e.kr/';
 
 export default {
   name: "App",
@@ -109,7 +109,7 @@ export default {
       this.session.on("exception", ({ exception }) => {
         console.warn(exception);
       });
-
+    
       // --- 4) Connect to the session with a valid user token ---
 
       // Get a token from the OpenVidu deployment
