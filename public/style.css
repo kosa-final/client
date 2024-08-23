@@ -3,53 +3,6 @@ html {
 	min-height: 100%;
 }
 
-nav {
-	height: 50px;
-	width: 100%;
-	z-index: 1;
-	background-color: #4d4d4d !important;
-	border-color: #4d4d4d !important;
-	border-top-right-radius: 0 !important;
-	border-top-left-radius: 0 !important;
-}
-
-.navbar-header {
-	width: 100%;
-}
-
-.nav-icon {
-	padding: 5px 15px 5px 15px;
-	float: right;
-}
-
-nav a {
-	color: #ccc !important;
-}
-
-nav i.fa {
-	font-size: 40px;
-	color: #ccc;
-}
-
-nav a:hover {
-	color: #a9a9a9 !important;
-}
-
-nav i.fa:hover {
-	color: #a9a9a9;
-}
-
-#main-container {
-	padding-bottom: 80px;
-}
-
-/*vertical-center {
-	position: relative;
-	top: 30%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-}*/
-
 .horizontal-center {
 	margin: 0 auto;
 }
@@ -88,7 +41,6 @@ input.btn {
 	bottom: 0;
 	width: 100%;
 	height: 60px;
-	background-color: #4d4d4d;
 }
 
 .footer .text-muted {
@@ -264,3 +216,19 @@ video {
 		max-width: inherit;
 	}
 }
+
+/* 폰트 사이즈 */
+.largeTitle {
+	font-size: 36px;
+	font-weight: bold;
+	text-align: center;
+	color: #DB574D;
+	padding: 50px;
+  }
+  
+  .middleTitle {
+	font-size: 24px;
+	font-weight: bold;
+	text-align: center;
+  }
+  
