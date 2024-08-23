@@ -56,7 +56,8 @@ import UserVideo from "@/components/video/UserVideo.vue";
 
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
-const APPLICATION_SERVER_URL = process.env.NODE_ENV === 'production' ? '' : 'https://main.dibw2cjnvqss9.amplifyapp.com';
+// const APPLICATION_SERVER_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000/';
+const APPLICATION_SERVER_URL = process.env.NODE_ENV === 'production' ? '' : 'https://firefour.p-e.kr/';
 
 export default {
   name: "App",
@@ -192,7 +193,7 @@ export default {
 
     async createSession(sessionId) {
       try {
-        const response = await axios.post(APPLICATION_SERVER_URL + '/api/sessions', { customSessionId: sessionId }, {
+        const response = await axios.post(APPLICATION_SERVER_URL + 'api/sessions', { customSessionId: sessionId }, {
           headers: { 'Content-Type': 'application/json' },
         });
         return response.data; // sessionId 반환
@@ -204,7 +205,7 @@ export default {
 
     async createToken(sessionId) {
       try {
-        const response = await axios.post(APPLICATION_SERVER_URL + '/api/sessions/' + sessionId + '/connections', {}, {
+        const response = await axios.post(APPLICATION_SERVER_URL + 'api/sessions/' + sessionId + '/connections', {}, {
           headers: { 'Content-Type': 'application/json' },
         });
         return response.data; // 토큰 반환
