@@ -56,7 +56,7 @@ import UserVideo from "@/components/video/UserVideo.vue";
 
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
-const APPLICATION_SERVER_URL = process.env.NODE_ENV === 'production' ? '' : 'https://firefour.p-e.kr/';
+const APPLICATION_SERVER_URL = process.env.NODE_ENV === 'production' ? '' : 'https://main.dibw2cjnvqss9.amplifyapp.com';
 
 export default {
   name: "App",
@@ -191,17 +191,27 @@ export default {
     },
 
     async createSession(sessionId) {
-      const response = await axios.post(APPLICATION_SERVER_URL + 'api/sessions', { customSessionId: sessionId }, {
-        headers: { 'Content-Type': 'application/json', },
-      });
-      return response.data; // The sessionId
+      try {
+        const response = await axios.post(APPLICATION_SERVER_URL + '/api/sessions', { customSessionId: sessionId }, {
+          headers: { 'Content-Type': 'application/json' },
+        });
+        return response.data; // sessionId 반환
+      } catch (error) {
+        console.error('세션 생성 중 오류 발생:', error.response || error.message);
+        throw error;
+      }
     },
 
     async createToken(sessionId) {
-      const response = await axios.post(APPLICATION_SERVER_URL + 'api/sessions/' + sessionId + '/connections', {}, {
-        headers: { 'Content-Type': 'application/json', },
-      });
-      return response.data; // The token
+      try {
+        const response = await axios.post(APPLICATION_SERVER_URL + '/api/sessions/' + sessionId + '/connections', {}, {
+          headers: { 'Content-Type': 'application/json' },
+        });
+        return response.data; // 토큰 반환
+      } catch (error) {
+        console.error('토큰 생성 중 오류 발생:', error.response || error.message);
+        throw error;
+      }
     },
   },
 };
