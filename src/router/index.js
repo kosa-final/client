@@ -8,6 +8,7 @@ import Enter from '@/views/EnterPage.vue';
 import UserVideo from '@/components/UserVideo.vue'; 
 import LoginCompo from '@/views/LoginCompo.vue'; 
 import UserProfile from '@/views/UserProfile.vue'; 
+import UserVideo from '@/components/video/UserVideo.vue';
 
 Vue.use(Router);
 
@@ -49,5 +50,7 @@ export default new Router({
     name: 'UserProfile',
     component: UserProfile
   }
+    component: UserVideo, // UserVideo 컴포넌트로 라우팅
+  },
 ]
 });
