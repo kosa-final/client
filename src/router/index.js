@@ -6,6 +6,8 @@ import Select from '@/views/SelectPage.vue';
 import Make from '@/views/MakePage.vue'; 
 import Enter from '@/views/EnterPage.vue'; 
 import UserVideo from '@/components/UserVideo.vue'; 
+import LoginCompo from '@/views/LoginCompo.vue'; 
+import UserProfile from '@/views/UserProfile.vue'; 
 
 Vue.use(Router);
 
@@ -36,6 +38,16 @@ export default new Router({
     path: '/uservideo',
     name: 'UserVideo',
     component: UserVideo
+  },
+  {
+    path: '/login',  
+    name: 'Login',
+    component: LoginCompo
+  },
+  {
+    path: '/profile',  
+    name: 'UserProfile',
+    component: UserProfile
   }
 ]
 });
