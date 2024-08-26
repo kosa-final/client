@@ -29,7 +29,7 @@ import UserVideo from '@/components/video/UserVideo.vue';
 
 axios.defaults.headers.post['Content-Type'] = 'application/json';
 
-const APPLICATION_SERVER_URL = 'http://localhost:5000/';
+const APPLICATION_SERVER_URL = 'https://clickpic.store/';
 
 export default {
   components: {
