@@ -27,14 +27,4 @@ nav {
   font-size: 24px;
   text-decoration: none;
 }
-
-.btn {
-  background-color: #DB574D;
-  border: none;
-  border-radius: 25px;
-  text-align: center;
-  padding: 7px 20px;
-  color: white;
-  font-size: 16px;
-}
 </style>

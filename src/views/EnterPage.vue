@@ -1,169 +1,111 @@
 <template>
-  <div id="main-container" class="container">
-    <div id="join" v-if="!session">
-      <div id="join-dialog" class="jumbotron vertical-center">
-        <h1>Join a video session</h1>
-        <div class="form-group">
-          <p>
-            <label>Participant</label>
-            <input v-model="myUserName" class="form-control" type="text" required />
-          </p>
-          <p>
-            <label>Session</label>
-            <input v-model="mySessionId" class="form-control" type="text" required />
-          </p>
-          <p class="text-center">
-            <button class="btn btn-lg btn-success" @click="joinSession()">
-              Join!
-            </button>
-          </p>
+  <div id="session">
+    <div class="largeTitle">ENTER THE ROOM</div>
+    <div class="container">
+      <div class="video-container">
+        <div id="video-grid">
+          <div v-for="(stream, index) in videoSlots" :key="index" class="video-slot">
+            <user-video v-if="stream" :stream-manager="stream" @click.native="updateMainVideoStreamManager(stream)" />
+            <div v-else class="waiting-message">대기중...</div>
+          </div>
         </div>
       </div>
-    </div>
-
-    <div id="session" v-if="session">
-      <div id="session-header">
-        <h1 id="session-title">{{ mySessionId }}</h1>
-        <input class="btn btn-large btn-danger" type="button" id="buttonLeaveSession" @click="leaveSession"
-          value="Leave session" />
-      </div>
-      <!-- <div id="main-video" class="col-md-6">
-        <user-video :stream-manager="mainStreamManager" />
-      </div> -->
-      <div id="video-container" class="col-md-6">
-        <table>
-          <tr>
-            <td>
-              <user-video :stream-manager="publisher" @click.native="updateMainVideoStreamManager(publisher)" />
-            </td>
-          </tr>
-          <tr>
-            <td>
-            <user-video v-for="sub in subscribers" :key="sub.stream.connection.connectionId" :stream-manager="sub"
-             @click.native="updateMainVideoStreamManager(sub)" />
-            </td>
-          </tr>
-        </table>
+      <div class="controls-container">
+        <div id="session-header">
+          <h1 id="middleTitle">{{ mySessionId }}</h1>
+          <input class="btn" type="button" id="buttonCaptureSnapshot" @click="captureSnapshot" value="사진 촬영하기" />
+          <input class="btn" type="button" id="buttonLeaveSession" @click="leaveSession" value="방 나가기" />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
+
 <script>
-import axios from "axios";
-import { OpenVidu } from "openvidu-browser";
-import UserVideo from "@/components/video/UserVideo.vue";
+import axios from 'axios';
+import { OpenVidu } from 'openvidu-browser';
+import UserVideo from '@/components/video/UserVideo.vue';
 
-axios.defaults.headers.post["Content-Type"] = "application/json";
+axios.defaults.headers.post['Content-Type'] = 'application/json';
 
-// const APPLICATION_SERVER_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000/';
-const APPLICATION_SERVER_URL = 'https://firefour.p-e.kr/';
+const APPLICATION_SERVER_URL = 'http://localhost:5000/';
 
 export default {
-  name: "App",
-
   components: {
     UserVideo,
   },
-
   data() {
     return {
-      // OpenVidu objects
       OV: undefined,
       session: undefined,
       mainStreamManager: undefined,
       publisher: undefined,
       subscribers: [],
-
-      // Join form
-      mySessionId: "SessionA",
-      myUserName: "Participant" + Math.floor(Math.random() * 100),
+      mySessionId: this.$route.query.sessionId || '',
+      myUserName: this.$route.query.userName || '',
+      videoSlots: [null, null, null, null], // 2x2 grid
     };
   },
-
+  mounted() {
+    this.joinSession();
+  },
   methods: {
-    joinSession() {
-      // --- 1) Get an OpenVidu object ---
+    async joinSession() {
+      this.videoSlots = [null, null, null, null];
+      
       this.OV = new OpenVidu();
-
-      // --- 2) Init a session ---
       this.session = this.OV.initSession();
 
-      // --- 3) Specify the actions when events take place in the session ---
-
-      // On every new Stream received...
-      this.session.on("streamCreated", ({ stream }) => {
+      this.session.on('streamCreated', ({ stream }) => {
         const subscriber = this.session.subscribe(stream);
-        this.subscribers.push(subscriber);
+        this.addStreamToGrid(subscriber);
       });
 
-      // On every Stream destroyed...
-      this.session.on("streamDestroyed", ({ stream }) => {
-        const index = this.subscribers.indexOf(stream.streamManager, 0);
-        if (index >= 0) {
-          this.subscribers.splice(index, 1);
-        }
+      this.session.on('streamDestroyed', ({ stream }) => {
+        this.removeStreamFromGrid(stream.streamManager);
       });
 
-      // On every asynchronous exception...
-      this.session.on("exception", ({ exception }) => {
+      this.session.on('exception', ({ exception }) => {
         console.warn(exception);
       });
-    
-      // --- 4) Connect to the session with a valid user token ---
 
-      // Get a token from the OpenVidu deployment
-      this.getToken(this.mySessionId).then((token) => {
+      try {
+        const token = await this.getToken(this.mySessionId);
+        await this.session.connect(token, { clientData: this.myUserName });
 
-        // First param is the token. Second param can be retrieved by every user on event
-        // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
-        this.session.connect(token, { clientData: this.myUserName })
-          .then(() => {
+        this.publisher = this.OV.initPublisher(undefined, {
+          audioSource: undefined,
+          videoSource: undefined,
+          publishAudio: true,
+          publishVideo: true,
+          resolution: '480x600',
+          frameRate: 30,
+          insertMode: 'APPEND',
+          mirror: false,
+        });
 
-            // --- 5) Get your own camera stream with the desired properties ---
+        this.mainStreamManager = this.publisher;
 
-            // Init a publisher passing undefined as targetElement (we don't want OpenVidu to insert a video
-            // element: we will manage it on our own) and with the desired properties
-            let publisher = this.OV.initPublisher(undefined, {
-              audioSource: undefined, // The source of audio. If undefined default microphone
-              videoSource: undefined, // The source of video. If undefined default webcam
-              publishAudio: true, // Whether you want to start publishing with your audio unmuted or not
-              publishVideo: true, // Whether you want to start publishing with your video enabled or not
-              resolution: "640x480", // The resolution of your video
-              frameRate: 30, // The frame rate of your video
-              insertMode: "APPEND", // How the video is inserted in the target element 'video-container'
-              mirror: false, // Whether to mirror your local video or not
-            });
+        await this.session.publish(this.publisher);
+        this.addStreamToGrid(this.publisher);
+      } catch (error) {
+        console.log('There was an error connecting to the session:', error.code, error.message);
+      }
 
-            // Set the main video in the page to display our webcam and store our Publisher
-            this.mainStreamManager = publisher;
-            this.publisher = publisher;
-
-            // --- 6) Publish your stream ---
-
-            this.session.publish(this.publisher);
-          })
-          .catch((error) => {
-            console.log("There was an error connecting to the session:", error.code, error.message);
-          });
-      });
-
-      window.addEventListener("beforeunload", this.leaveSession);
+      window.addEventListener('beforeunload', this.leaveSession);
     },
 
     leaveSession() {
-      // --- 7) Leave the session by calling 'disconnect' method over the Session object ---
       if (this.session) this.session.disconnect();
-
-      // Empty all properties...
       this.session = undefined;
       this.mainStreamManager = undefined;
       this.publisher = undefined;
       this.subscribers = [];
+      this.videoSlots = [null, null, null, null];
       this.OV = undefined;
-
-      // Remove beforeunload listener
-      window.removeEventListener("beforeunload", this.leaveSession);
+      window.removeEventListener('beforeunload', this.leaveSession);
+      this.$router.push('/');
     },
 
     updateMainVideoStreamManager(stream) {
@@ -171,21 +113,6 @@ export default {
       this.mainStreamManager = stream;
     },
 
-    /**
-     * --------------------------------------------
-     * GETTING A TOKEN FROM YOUR APPLICATION SERVER
-     * --------------------------------------------
-     * The methods below request the creation of a Session and a Token to
-     * your application server. This keeps your OpenVidu deployment secure.
-     *
-     * In this sample code, there is no user control at all. Anybody could
-     * access your application server endpoints! In a real production
-     * environment, your application server must identify the user to allow
-     * access to the endpoints.
-     *
-     * Visit https://docs.openvidu.io/en/stable/application-server to learn
-     * more about the integration of OpenVidu in your application server.
-     */
     async getToken(mySessionId) {
       const sessionId = await this.createSession(mySessionId);
       return await this.createToken(sessionId);
@@ -196,9 +123,9 @@ export default {
         const response = await axios.post(APPLICATION_SERVER_URL + 'api/sessions', { customSessionId: sessionId }, {
           headers: { 'Content-Type': 'application/json' },
         });
-        return response.data; // sessionId 반환
+        return response.data;
       } catch (error) {
-        console.error('세션 생성 중 오류 발생:', error.response || error.message);
+        console.error('Session creation error:', error.response || error.message);
         throw error;
       }
     },
@@ -208,10 +135,57 @@ export default {
         const response = await axios.post(APPLICATION_SERVER_URL + 'api/sessions/' + sessionId + '/connections', {}, {
           headers: { 'Content-Type': 'application/json' },
         });
-        return response.data; // 토큰 반환
+        return response.data;
       } catch (error) {
-        console.error('토큰 생성 중 오류 발생:', error.response || error.message);
+        if (error.response && error.response.status === 403) {
+          alert('참여자 수가 초과되었습니다. 더 이상 입장할 수 없습니다.');
+        }
+        console.error('Token creation error:', error.response || error.message);
         throw error;
+      }
+    },
+
+    captureSnapshot() {
+      const videoElements = Array.from(document.querySelectorAll('video')).filter(video =>
+        video.id.startsWith('local-video') || video.id.startsWith('remote-video')
+      );
+
+      if (videoElements.length > 0) {
+        videoElements.forEach((videoElement, index) => {
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.width = videoElement.videoWidth;
+          canvas.height = videoElement.videoHeight;
+
+          context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+          const imageUrl = canvas.toDataURL('image/png');
+
+          const link = document.createElement('a');
+          link.href = imageUrl;
+          link.download = `snapshot-${index + 1}.png`;
+          link.click();
+        });
+      } else {
+        console.error('No matching video elements found!');
+      }
+    },
+
+    addStreamToGrid(stream) {
+      const emptyIndex = this.videoSlots.indexOf(null);
+      if (emptyIndex !== -1) {
+        this.$set(this.videoSlots, emptyIndex, stream);
+      } else {
+        console.warn('No empty slots available to add the new stream.');
+      }
+    },
+
+    removeStreamFromGrid(stream) {
+      const index = this.videoSlots.indexOf(stream);
+      if (index !== -1) {
+        this.$set(this.videoSlots, index, null);
+      } else {
+        console.warn('Stream not found in video slots.');
       }
     },
   },
@@ -219,5 +193,47 @@ export default {
 </script>
 
 <style scoped>
+#session {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  display: flex;
+  width: 90%;
+}
+
+.video-container {
+  width: 60%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px;
+}
+
+.controls-container {
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px;
+}
+
+#video-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 480px);
+  grid-template-rows: repeat(2, 600px);
+}
+
+.video-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 20px;
+}
 
 </style>
+

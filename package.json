@@ -12,6 +12,7 @@
     "core-js": "3.9.1",
     "html2canvas": "^1.4.1",
     "openvidu-browser": "2.30.0",
+    "uuid": "^10.0.0",
     "vue": "2.6.12",
     "vue-router": "^3.6.5"
   },
