@@ -1,37 +1,34 @@
 <template>
   <div id="session">
     <div class="largeTitle">ENTER THE ROOM</div>
-    <div class="container">
-      <div class="video-container">
-        <div id="video-grid">
-          <div v-for="(stream, index) in videoSlots" :key="index" class="video-slot">
-            <user-video v-if="stream" :stream-manager="stream" @click.native="updateMainVideoStreamManager(stream)" />
-            <div v-else class="waiting-message">대기중...</div>
-          </div>
+      <div class="container">
+        <div id="video-container" class="col-md-6">
+          <user-video :stream-manager="publisher" @click.native="updateMainVideoStreamManager(publisher)" />
+          <user-video v-for="sub in subscribers" :key="sub.stream.connection.connectionId" :stream-manager="sub"
+            @click.native="updateMainVideoStreamManager(sub)" />
         </div>
-      </div>
       <div class="controls-container">
         <div id="session-header">
-          <h1 id="middleTitle">{{ mySessionId }}</h1>
-          <input class="btn" type="button" id="buttonCaptureSnapshot" @click="captureSnapshot" value="사진 촬영하기" />
-          <input class="btn" type="button" id="buttonLeaveSession" @click="leaveSession" value="방 나가기" />
+          <h1 id="session-title">{{ sessionId }}</h1>
+          <input class="btn btn-large btn-danger" type="button" id="buttonLeaveSession" @click="leaveSession"
+            value="Leave session" />
         </div>
       </div>
     </div>
   </div>
 </template>
 
-
 <script>
-import axios from 'axios';
-import { OpenVidu } from 'openvidu-browser';
-import UserVideo from '@/components/video/UserVideo.vue';
+import axios from "axios";
+import { OpenVidu } from "openvidu-browser";
+import UserVideo from "@/components/video/UserVideo";
 
-axios.defaults.headers.post['Content-Type'] = 'application/json';
+axios.defaults.headers.post["Content-Type"] = "application/json";
 
-const APPLICATION_SERVER_URL = 'https://clickpic.store/';
+const APPLICATION_SERVER_URL = 'https://4cutstudio.store/';
 
 export default {
+  name: "EnterPage",
   components: {
     UserVideo,
   },
@@ -42,58 +39,58 @@ export default {
       mainStreamManager: undefined,
       publisher: undefined,
       subscribers: [],
-      mySessionId: this.$route.query.sessionId || '',
-      myUserName: this.$route.query.userName || '',
-      videoSlots: [null, null, null, null], // 2x2 grid
+      sessionId: this.$route.query.sessionId,
+      userName: this.$route.query.userName,
+      participantCount: this.$route.query.participantCount,
+
     };
   },
-  mounted() {
-    this.joinSession();
-  },
   methods: {
-    async joinSession() {
-      this.videoSlots = [null, null, null, null];
-      
+    joinSession() {
       this.OV = new OpenVidu();
       this.session = this.OV.initSession();
 
-      this.session.on('streamCreated', ({ stream }) => {
+      this.session.on("streamCreated", ({ stream }) => {
         const subscriber = this.session.subscribe(stream);
-        this.addStreamToGrid(subscriber);
+        this.subscribers.push(subscriber);
       });
 
-      this.session.on('streamDestroyed', ({ stream }) => {
-        this.removeStreamFromGrid(stream.streamManager);
+      this.session.on("streamDestroyed", ({ stream }) => {
+        const index = this.subscribers.indexOf(stream.streamManager, 0);
+        if (index >= 0) {
+          this.subscribers.splice(index, 1);
+        }
       });
 
-      this.session.on('exception', ({ exception }) => {
+      this.session.on("exception", ({ exception }) => {
         console.warn(exception);
       });
 
-      try {
-        const token = await this.getToken(this.mySessionId);
-        await this.session.connect(token, { clientData: this.myUserName });
+      this.getToken(this.sessionId).then((token) => {
+        this.session.connect(token, { clientData: this.userName })
+          .then(() => {
+            let publisher = this.OV.initPublisher(undefined, {
+              audioSource: undefined,
+              videoSource: undefined,
+              publishAudio: true,
+              publishVideo: true,
+              resolution: "480x600",
+              frameRate: 30,
+              insertMode: "APPEND",
+              mirror: false,
+            });
 
-        this.publisher = this.OV.initPublisher(undefined, {
-          audioSource: undefined,
-          videoSource: undefined,
-          publishAudio: true,
-          publishVideo: true,
-          resolution: '480x600',
-          frameRate: 30,
-          insertMode: 'APPEND',
-          mirror: false,
-        });
+            this.mainStreamManager = publisher;
+            this.publisher = publisher;
 
-        this.mainStreamManager = this.publisher;
+            this.session.publish(this.publisher);
+          })
+          .catch((error) => {
+            console.log("There was an error connecting to the session:", error.code, error.message);
+          });
+      });
 
-        await this.session.publish(this.publisher);
-        this.addStreamToGrid(this.publisher);
-      } catch (error) {
-        console.log('There was an error connecting to the session:', error.code, error.message);
-      }
-
-      window.addEventListener('beforeunload', this.leaveSession);
+      window.addEventListener("beforeunload", this.leaveSession);
     },
 
     leaveSession() {
@@ -102,10 +99,8 @@ export default {
       this.mainStreamManager = undefined;
       this.publisher = undefined;
       this.subscribers = [];
-      this.videoSlots = [null, null, null, null];
       this.OV = undefined;
-      window.removeEventListener('beforeunload', this.leaveSession);
-      this.$router.push('/');
+      window.removeEventListener("beforeunload", this.leaveSession);
     },
 
     updateMainVideoStreamManager(stream) {
@@ -113,127 +108,44 @@ export default {
       this.mainStreamManager = stream;
     },
 
-    async getToken(mySessionId) {
-      const sessionId = await this.createSession(mySessionId);
-      return await this.createToken(sessionId);
+    async getToken(sessionId) {
+      const sessionIdFromServer = await this.createSession(sessionId);
+      return await this.createToken(sessionIdFromServer);
     },
 
     async createSession(sessionId) {
-      try {
-        const response = await axios.post(APPLICATION_SERVER_URL + 'api/sessions', { customSessionId: sessionId }, {
-          headers: { 'Content-Type': 'application/json' },
-        });
-        return response.data;
-      } catch (error) {
-        console.error('Session creation error:', error.response || error.message);
-        throw error;
-      }
+      const response = await axios.post(APPLICATION_SERVER_URL + 'api/sessions', { customSessionId: sessionId }, {
+        headers: { 'Content-Type': 'application/json', },
+      });
+      return response.data; // The sessionId from the server
     },
 
-    async createToken(sessionId) {
-      try {
-        const response = await axios.post(APPLICATION_SERVER_URL + 'api/sessions/' + sessionId + '/connections', {}, {
-          headers: { 'Content-Type': 'application/json' },
-        });
-        return response.data;
-      } catch (error) {
-        if (error.response && error.response.status === 403) {
-          alert('참여자 수가 초과되었습니다. 더 이상 입장할 수 없습니다.');
-        }
-        console.error('Token creation error:', error.response || error.message);
-        throw error;
-      }
+    async createToken(sessionIdFromServer) {
+      const response = await axios.post(APPLICATION_SERVER_URL + 'api/sessions/' + sessionIdFromServer + '/connections', {}, {
+        headers: { 'Content-Type': 'application/json', },
+      });
+      return response.data; // The token
     },
-
-    captureSnapshot() {
-      const videoElements = Array.from(document.querySelectorAll('video')).filter(video =>
-        video.id.startsWith('local-video') || video.id.startsWith('remote-video')
-      );
-
-      if (videoElements.length > 0) {
-        videoElements.forEach((videoElement, index) => {
-          const canvas = document.createElement('canvas');
-          const context = canvas.getContext('2d');
-          canvas.width = videoElement.videoWidth;
-          canvas.height = videoElement.videoHeight;
-
-          context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-
-          const imageUrl = canvas.toDataURL('image/png');
-
-          const link = document.createElement('a');
-          link.href = imageUrl;
-          link.download = `snapshot-${index + 1}.png`;
-          link.click();
-        });
-      } else {
-        console.error('No matching video elements found!');
-      }
-    },
-
-    addStreamToGrid(stream) {
-      const emptyIndex = this.videoSlots.indexOf(null);
-      if (emptyIndex !== -1) {
-        this.$set(this.videoSlots, emptyIndex, stream);
-      } else {
-        console.warn('No empty slots available to add the new stream.');
-      }
-    },
-
-    removeStreamFromGrid(stream) {
-      const index = this.videoSlots.indexOf(stream);
-      if (index !== -1) {
-        this.$set(this.videoSlots, index, null);
-      } else {
-        console.warn('Stream not found in video slots.');
-      }
-    },
+  },
+  created() {
+    this.joinSession();
   },
 };
 </script>
 
 <style scoped>
-#session {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 .container {
-  display: flex;
-  width: 90%;
+  width: 100%;
+  height: auto;
+  display: flex; 
+  justify-content: space-between;
 }
 
 .video-container {
-  width: 60%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 50px;
+  width: 70%
 }
 
 .controls-container {
-  width: 40%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 50px;
+  width: 30%;
 }
-
-#video-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 480px);
-  grid-template-rows: repeat(2, 600px);
-}
-
-.video-slot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  padding: 20px;
-}
-
 </style>
-
