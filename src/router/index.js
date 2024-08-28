@@ -4,7 +4,9 @@ import Router from 'vue-router';
 import Home from '@/views/HomePage.vue'; 
 import Select from '@/views/SelectPage.vue'; 
 import Make from '@/views/MakePage.vue'; 
-import Enter from '@/views/EnterPage.vue'; 
+import OneFrame from '@/views/OneFramePage.vue';
+import TwoFrame from '@/views/TwoFramePage.vue'; 
+import FourFrame from '@/views/FourFramePage.vue'; 
 import UserVideo from '@/components/video/UserVideo.vue'; 
 import Edit from '@/views/EditPage.vue'; 
 
@@ -32,9 +34,19 @@ export default new Router({
       component: Make
     },
     {
-      path: '/enter',
-      name: 'Enter',
-      component: Enter
+      path: '/oneframe',
+      name: 'OneFrame',
+      component: OneFrame
+    },
+    {
+      path: '/twoframe',
+      name: 'TwoFrame',
+      component: TwoFrame
+    },
+    {
+      path: '/fourframe',
+      name: 'FourFrame',
+      component: FourFrame
     },
     {
       path: '/edit',

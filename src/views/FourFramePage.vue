@@ -22,6 +22,7 @@
 import axios from "axios";
 import { OpenVidu } from "openvidu-browser";
 import UserVideo from "@/components/video/UserVideo";
+import frameImage from '@/assets/frame.png';
 
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
@@ -42,7 +43,7 @@ export default {
       sessionId: this.$route.query.sessionId,
       userName: this.$route.query.userName,
       participantCount: this.$route.query.participantCount,
-
+      frameImageUrl: frameImage,
     };
   },
   methods: {
