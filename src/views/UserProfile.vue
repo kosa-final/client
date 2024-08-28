@@ -10,53 +10,48 @@
 import axios from 'axios';
 
 export default {
-  data() {
-    return {
-      userInfo: {},
-      accessToken: null,
-    };
+  computed: {
+    userInfo() {
+      return this.$store.state.userInfo;
+    }
   },
   methods: {
     fetchUserInfo() {
-      const urlParams = new URLSearchParams(window.location.search);
-      this.accessToken = urlParams.get('accessToken') || localStorage.getItem('accessToken');
+      const storedToken = localStorage.getItem('accessToken');
+      this.accessToken = new URLSearchParams(window.location.search).get('accessToken') || storedToken;
+
       if (!this.accessToken) {
-        this.$router.push('/'); 
+        this.$router.push('/');
         return;
       }
 
-      localStorage.setItem('accessToken', this.accessToken);
-
-      axios.get('http://localhost:5000/api/userinfo', {
-        withCredentials: true, 
+      axios.get('http://localhost:8080/api/userinfo', {
         headers: {
-          Authorization: `Bearer ${this.accessToken}`
-        }
+          Authorization: `Bearer ${this.accessToken}`,
+        },
+        withCredentials: true,
       })
       .then(response => {
-        this.userInfo = response.data.properties; 
+        // Vuex 상태 업데이트
+        this.$store.commit('setUserInfo', response.data);
 
+        // 로컬 스토리지에 사용자 정보를 저장
         localStorage.setItem('userId', response.data.id);
         localStorage.setItem('nickname', response.data.properties.nickname);
+        localStorage.setItem('accessToken', this.accessToken);
       })
       .catch(error => {
         console.error('사용자 정보 불러오기 실패:', error);
       });
     },
     logout() {
-      const params = new URLSearchParams();
-      params.append('accessToken', this.accessToken);
-
-      axios.post('http://localhost:5000/api/logout', params)
+      axios.post('http://localhost:8080/api/logout', new URLSearchParams({ accessToken: this.accessToken }))
       .then(() => {
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('userId');
-          localStorage.removeItem('nickname');
-          this.accessToken = null;
-          this.$router.push('/');
+        this.$store.commit('logout'); // Vuex의 logout mutation 호출
+        this.$router.push('/'); // 로그아웃 후 메인페이지로 이동
       })
       .catch(error => {
-          console.error('로그아웃 실패:', error);
+        console.error('로그아웃 실패:', error);
       });
     }
   },

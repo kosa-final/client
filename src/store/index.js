@@ -1,7 +1,10 @@
-import { createStore } from 'vuex';
+import Vue from 'vue';
+import Vuex from 'vuex';
 import axios from 'axios';
 
-export default createStore({
+Vue.use(Vuex);
+
+export default new Vuex.Store({
   state: {
     accessToken: localStorage.getItem('accessToken') || null,
     userInfo: {},
@@ -13,7 +16,7 @@ export default createStore({
     },
     setUserInfo(state, userInfo) {
       state.userInfo = userInfo;
-
+  
       // 사용자 아이디와 닉네임을 로컬 스토리지에 저장
       localStorage.setItem('userId', userInfo.id);
       localStorage.setItem('nickname', userInfo.nickname);
@@ -25,13 +28,13 @@ export default createStore({
       localStorage.removeItem('userId');
       localStorage.removeItem('nickname');
     }
-  },
+  },  
   actions: {
     fetchUserInfo({ commit, state }) {
       if (!state.accessToken) {
         return;
       }
-      axios.get('http://localhost:5000/api/userinfo', {
+      axios.get('http://localhost:8080/api/userinfo', {
         headers: {
           Authorization: `Bearer ${state.accessToken}`
         }
