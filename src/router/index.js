@@ -6,6 +6,8 @@ import Select from '@/views/SelectPage.vue';
 import Make from '@/views/MakePage.vue'; 
 import Enter from '@/views/EnterPage.vue'; 
 import UserVideo from '@/components/video/UserVideo.vue'; 
+import Edit from '@/views/EditPage.vue'; 
+
 import LoginCompo from '@/views/LoginCompo.vue'; 
 import UserProfile from '@/views/UserProfile.vue'; 
 
@@ -33,6 +35,11 @@ export default new Router({
       path: '/enter',
       name: 'Enter',
       component: Enter
+    },
+    {
+      path: '/edit',
+      name: 'Edit',
+      component: Edit
     },
     {
       path: '/uservideo',

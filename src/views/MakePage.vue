@@ -48,7 +48,7 @@ axios.defaults.headers.post["Content-Type"] = "application/json";
 
 // const APPLICATION_SERVER_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8080/';
 
-const APPLICATION_SERVER_URL = 'http://localhost:8080/';
+const APPLICATION_SERVER_URL = 'https://4cutstudio.store/';
 
 export default {
   name: "App",

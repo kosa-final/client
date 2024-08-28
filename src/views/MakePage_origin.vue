@@ -45,7 +45,7 @@ export default {
     async createRoom() {
       this.mySessionId = uuidv4();
       try {
-        await axios.post('https://clickpic.store/api/sessions', {
+        await axios.post('https://4cutstudio.store/api/sessions', {
           participantCount: this.participantCount,
         });
 
