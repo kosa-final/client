@@ -3,8 +3,8 @@
     <nav>
       <a class="logo" href="/">4CutStudio</a>
       <div>
-        <button v-if="isLoggedIn" @click="logoutUser" class="btn">Logout</button>
-        <router-link v-if="isLoggedIn" to="/profile">
+        <button v-if="isLoggedIn" @click="logoutUser" class="btn">LOGOUT</button>
+        <router-link v-if="isLoggedIn" to="/mypage"> <!-- mypage 경로로 수정 -->
           <button class="btn">My Page</button>
         </router-link>
         <router-link v-else to="/login">
@@ -33,11 +33,6 @@ export default {
       if (this.$route.path !== '/') {
         this.$router.push('/'); // 현재 경로가 '/'가 아닌 경우에만 리다이렉트
       }
-    }
-  },
-  watch: {
-    accessToken() {
-      this.$forceUpdate(); // 상태가 변경될 때 강제로 업데이트
     }
   }
 };
