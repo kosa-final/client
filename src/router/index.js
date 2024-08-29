@@ -12,6 +12,7 @@ import Edit from '@/views/EditPage.vue';
 
 import LoginCompo from '@/views/LoginCompo.vue'; 
 import UserProfile from '@/views/UserProfile.vue'; 
+import MyPageCompo from '@/views/MyPageCompo.vue';
 
 Vue.use(Router);
 
@@ -67,6 +68,11 @@ export default new Router({
       path: '/profile',  
       name: 'UserProfile',
       component: UserProfile
+    },
+    {
+      path: '/mypage', 
+      name: 'MyPage',
+      component: MyPageCompo
     }
   ]
 });

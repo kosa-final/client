@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import main from '@/assets/main.png';
+import main from '@/assets/MainPage2.png';
 
 export default {
   data() {
