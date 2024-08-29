@@ -4,7 +4,7 @@
       <a class="logo" href="/">4CutStudio</a>
       <div>
         <button v-if="isLoggedIn" @click="logoutUser" class="btn">LOGOUT</button>
-        <router-link v-if="isLoggedIn" to="/mypage"> <!-- mypage 경로로 수정 -->
+        <router-link v-if="isLoggedIn" to="/mypage">
           <button class="btn">My Page</button>
         </router-link>
         <router-link v-else to="/login">
@@ -27,11 +27,19 @@ export default {
     }
   },
   methods: {
-    logoutUser() {  // 로그아웃 기능을 수행하는 메서드
+    logoutUser() {
       this.$store.commit('logout'); // Vuex의 logout 메서드 호출
       
       if (this.$route.path !== '/') {
         this.$router.push('/'); // 현재 경로가 '/'가 아닌 경우에만 리다이렉트
+      }
+    }
+  },
+  watch: {
+    accessToken(newValue) {
+      // accessToken이 변경될 때 컴포넌트를 강제로 다시 렌더링
+      if (newValue) {
+        this.$forceUpdate();
       }
     }
   }
