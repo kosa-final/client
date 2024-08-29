@@ -13,13 +13,14 @@
       <p class="middleTitle">방 인원 선택하기</p>
       <button @click="setParticipantCount(1)" :class="{'btn-selected': participantCount === 1, 'btn-empty': participantCount !== 1}">1명</button>
       <button @click="setParticipantCount(2)" :class="{'btn-selected': participantCount === 2, 'btn-empty': participantCount !== 2}">2명</button>
+      <button @click="setParticipantCount(3)" :class="{'btn-selected': participantCount === 3, 'btn-empty': participantCount !== 3}">3명</button>
       <button @click="setParticipantCount(4)" :class="{'btn-selected': participantCount === 4, 'btn-empty': participantCount !== 4}">4명</button>
     </div>
     <div class="center">
       <p class="middleTitle">프레임 선택하기</p>
       <p>색상별</p>
       <div class="frame-options">
-        <div v-for="(frame, index) in frames" :key="index" class="frame-option">
+        <div v-for="(frame, index) in currentFrames" :key="index" class="frame-option">
           <img 
             :src="frame.src" 
             :alt="frame.name" 
@@ -31,7 +32,7 @@
       </div>
       <p>패턴별</p>
       <div class="frame-options">
-        <div v-for="(frame, index) in frames_pattern" :key="index" class="frame-option">
+        <div v-for="(frame, index) in currentPatternFrames" :key="index" class="frame-option">
           <img 
             :src="frame.src" 
             :alt="frame.name" 
@@ -59,24 +60,84 @@ export default {
       RoomName: "",
       SessionId: "",
       participantCount: 1,
-      frames: [
-        { name: '4frame_white', src: require('@/assets/frame/4frame_white.png') },
-        { name: '4frame_black', src: require('@/assets/frame/4frame_black.png') },
-        { name: '4frame_red', src: require('@/assets/frame/4frame_red.png') },
-        { name: '4frame_blue', src: require('@/assets/frame/4frame_blue.png') },
-        { name: '4frame_green', src: require('@/assets/frame/4frame_green.png') },
-        { name: '4frame_purple', src: require('@/assets/frame/4frame_purple.png') }
-      ],
-      frames_pattern: [
-        { name: '4frame_white_pattern', src: require('@/assets/frame/4frame_white_pattern.png') },
-        { name: '4frame_black_pattern', src: require('@/assets/frame/4frame_black_pattern.png') },
-        { name: '4frame_red_pattern', src: require('@/assets/frame/4frame_red_pattern.png') },
-        { name: '4frame_blue_pattern', src: require('@/assets/frame/4frame_blue_pattern.png') },
-        { name: '4frame_green_pattern', src: require('@/assets/frame/4frame_green_pattern.png') },
-        { name: '4frame_purple_pattern', src: require('@/assets/frame/4frame_purple_pattern.png') }
-      ],
+      frames: {
+        1: [
+          { name: '1frame_black', src: require('@/assets/frame/1frame_black.png') },
+          { name: '1frame_blue', src: require('@/assets/frame/1frame_blue.png') },
+          { name: '1frame_green', src: require('@/assets/frame/1frame_green.png') },
+          { name: '1frame_purple', src: require('@/assets/frame/1frame_purple.png') },
+          { name: '1frame_red', src: require('@/assets/frame/1frame_red.png') },
+          { name: '1frame_white', src: require('@/assets/frame/1frame_white.png') },
+        ],
+        2: [
+          { name: '2frame_black', src: require('@/assets/frame/2frame_black.png') },
+          { name: '2frame_blue', src: require('@/assets/frame/2frame_blue.png') },
+          { name: '2frame_green', src: require('@/assets/frame/2frame_green.png') },
+          { name: '2frame_purple', src: require('@/assets/frame/2frame_purple.png') },
+          { name: '2frame_red', src: require('@/assets/frame/2frame_red.png') },
+          { name: '2frame_white', src: require('@/assets/frame/2frame_white.png') },
+        ],
+        3: [
+          { name: '3frame_black', src: require('@/assets/frame/3frame_black.png') },
+          { name: '3frame_blue', src: require('@/assets/frame/3frame_blue.png') },
+          { name: '3frame_green', src: require('@/assets/frame/3frame_green.png') },
+          { name: '3frame_purple', src: require('@/assets/frame/3frame_purple.png') },
+          { name: '3frame_red', src: require('@/assets/frame/3frame_red.png') },
+          { name: '3frame_white', src: require('@/assets/frame/3frame_white.png') },
+        ],
+        4: [
+          { name: '4frame_black', src: require('@/assets/frame/4frame_black.png') },
+          { name: '4frame_blue', src: require('@/assets/frame/4frame_blue.png') },
+          { name: '4frame_green', src: require('@/assets/frame/4frame_green.png') },
+          { name: '4frame_purple', src: require('@/assets/frame/4frame_purple.png') },
+          { name: '4frame_red', src: require('@/assets/frame/4frame_red.png') },
+          { name: '4frame_white', src: require('@/assets/frame/4frame_white.png') },
+        ]
+      },
+      frames_pattern: {
+        1: [
+          { name: '1frame_black', src: require('@/assets/frame/1frame_black_pattern.png') },
+          { name: '1frame_blue', src: require('@/assets/frame/1frame_blue_pattern.png') },
+          { name: '1frame_green', src: require('@/assets/frame/1frame_green_pattern.png') },
+          { name: '1frame_purple', src: require('@/assets/frame/1frame_purple_pattern.png') },
+          { name: '1frame_red', src: require('@/assets/frame/1frame_red_pattern.png') },
+          { name: '1frame_white', src: require('@/assets/frame/1frame_white_pattern.png') },
+        ],
+        2: [
+          { name: '2frame_black', src: require('@/assets/frame/2frame_black_pattern.png') },
+          { name: '2frame_blue', src: require('@/assets/frame/2frame_blue_pattern.png') },
+          { name: '2frame_green', src: require('@/assets/frame/2frame_green_pattern.png') },
+          { name: '2frame_purple', src: require('@/assets/frame/2frame_purple_pattern.png') },
+          { name: '2frame_red', src: require('@/assets/frame/2frame_red_pattern.png') },
+          { name: '2frame_white', src: require('@/assets/frame/2frame_white_pattern.png') },
+        ],
+        3: [
+          { name: '3frame_black', src: require('@/assets/frame/3frame_black_pattern.png') },
+          { name: '3frame_blue', src: require('@/assets/frame/3frame_blue_pattern.png') },
+          { name: '3frame_green', src: require('@/assets/frame/3frame_green_pattern.png') },
+          { name: '3frame_purple', src: require('@/assets/frame/3frame_purple_pattern.png') },
+          { name: '3frame_red', src: require('@/assets/frame/3frame_red_pattern.png') },
+          { name: '3frame_white', src: require('@/assets/frame/3frame_white_pattern.png') },
+        ],
+        4: [
+          { name: '4frame_black_pattern', src: require('@/assets/frame/4frame_black_pattern.png') },
+          { name: '4frame_blue_pattern', src: require('@/assets/frame/4frame_blue_pattern.png') },
+          { name: '4frame_green_pattern', src: require('@/assets/frame/4frame_green_pattern.png') },
+          { name: '4frame_purple_pattern', src: require('@/assets/frame/4frame_purple_pattern.png') },
+          { name: '4frame_red_pattern', src: require('@/assets/frame/4frame_red_pattern.png') },
+          { name: '4frame_white_pattern', src: require('@/assets/frame/4frame_white_pattern.png') },
+        ]
+      },
       selectedFrame: null,
     };
+  },
+  computed: {
+    currentFrames() {
+      return this.frames[this.participantCount] || [];
+    },
+    currentPatternFrames() {
+      return this.frames_pattern[this.participantCount] || [];
+    }
   },
   methods: {
     setParticipantCount(count) {
@@ -94,13 +155,20 @@ export default {
           targetPage = 'OneFrame';
         } else if (this.participantCount === 2) {
           targetPage = 'TwoFrame';
+        } else if (this.participantCount === 3) {
+          targetPage = 'ThreeFrame';
         } else if (this.participantCount === 4) {
           targetPage = 'FourFrame';
         }
 
         this.$router.push({
           name: targetPage,
-          params: {},
+          params: {
+            sessionId: this.SessionId,
+            userName: this.UserName,
+            participantCount: this.participantCount, 
+            frame: this.selectedFrame
+          },
           query: {
             sessionId: this.SessionId,
             userName: this.UserName,
