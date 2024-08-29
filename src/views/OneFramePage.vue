@@ -201,7 +201,7 @@ export default {
   position: absolute;
   width: 100%;
   height: 100%;
-  grid-template-columns: 300px 300px; /* 각 열의 넓이/
+  grid-template-columns: 300px 300px; /* 각 열의 넓이*/
   grid-template-rows: 350px 350px; /* 각 행의 높이 */
   grid-gap: 0; /* 비디오 간의 간격 제거 */
   z-index: 1;
