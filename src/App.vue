@@ -12,13 +12,20 @@ import FooterComponent from '@/components/FooterComponent.vue';
 import ContainerComponent from '@/components/ContainerComponent.vue';
 
 export default {
-    name: 'App',
-
-    components: {
-        HeaderComponent,
-        ContainerComponent,
-        FooterComponent,
-    },
+  name: 'App',
+  components: {
+    HeaderComponent,
+    ContainerComponent,
+    FooterComponent,
+  },
+  created() {
+    const storedToken = localStorage.getItem('accessToken');
+    
+    if (storedToken) {
+      this.$store.commit('setAccessToken', storedToken); // Vuex에 토큰 갱신
+      this.$store.dispatch('fetchUserInfo');
+    }
+  }
 };
 </script>
 

@@ -68,19 +68,19 @@
       }
     },
     mounted() {
-      if (!this.accessToken) {
+    if (!this.accessToken) {
         alert("로그인이 필요합니다.");
         this.$router.push('/login');
-      } else if (!this.userInfo || !this.userInfo.nickname) {
+    } else if (!this.userInfo || !this.userInfo.nickname) {
         // 로컬 스토리지에서 데이터 복원
         const storedUserInfo = {
-          id: localStorage.getItem('userId'),
-          properties: {
-            nickname: localStorage.getItem('nickname')
-          }
+            id: localStorage.getItem('userId'),
+            properties: {
+                nickname: localStorage.getItem('nickname')
+            }
         };
         this.$store.commit('setUserInfo', storedUserInfo);
-      }
+    }
     }
   }
   </script>
