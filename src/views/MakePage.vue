@@ -1,19 +1,46 @@
 <template>
-  <div id="join-dialog" class="jumbotron vertical-center">
+  <div id="join-dialog">
     <div class="largeTitle">MAKE A ROOM</div>
-    <div class="center marginBottom">
+    <div class="center">
       <p class="middleTitle">참여자</p>
       <input v-model="UserName" class="form-control" type="text" required />
     </div>
-    <div class="center marginBottom">
+    <div class="center">
       <p class="middleTitle">방 이름 입력하기</p>
       <input v-model="RoomName" class="form-control" type="text" required />
     </div>
-    <div class="center marginBottom">
+    <div class="center">
       <p class="middleTitle">방 인원 선택하기</p>
       <button @click="setParticipantCount(1)" :class="{'btn-selected': participantCount === 1, 'btn-empty': participantCount !== 1}">1명</button>
       <button @click="setParticipantCount(2)" :class="{'btn-selected': participantCount === 2, 'btn-empty': participantCount !== 2}">2명</button>
       <button @click="setParticipantCount(4)" :class="{'btn-selected': participantCount === 4, 'btn-empty': participantCount !== 4}">4명</button>
+    </div>
+    <div class="center">
+      <p class="middleTitle">프레임 선택하기</p>
+      <p>색상별</p>
+      <div class="frame-options">
+        <div v-for="(frame, index) in frames" :key="index" class="frame-option">
+          <img 
+            :src="frame.src" 
+            :alt="frame.name" 
+            class="frame-image" 
+            :class="{'selected-frame': selectedFrame === frame.name}" 
+            @click="selectFrame(frame)" 
+          />
+        </div>
+      </div>
+      <p>패턴별</p>
+      <div class="frame-options">
+        <div v-for="(frame, index) in frames_pattern" :key="index" class="frame-option">
+          <img 
+            :src="frame.src" 
+            :alt="frame.name" 
+            class="frame-image" 
+            :class="{'selected-frame': selectedFrame === frame.name}" 
+            @click="selectFrame(frame)" 
+          />
+        </div>
+      </div>
     </div>
     <div class="center marginBottom">
       <button class="btn btn-lg btn-success" @click="joinSession">방 만들기</button>
@@ -31,12 +58,32 @@ export default {
       UserName: "Participant" + Math.floor(Math.random() * 100),
       RoomName: "",
       SessionId: "",
-      participantCount: 1, 
+      participantCount: 1,
+      frames: [
+        { name: '4frame_white', src: require('@/assets/frame/4frame_white.png') },
+        { name: '4frame_black', src: require('@/assets/frame/4frame_black.png') },
+        { name: '4frame_red', src: require('@/assets/frame/4frame_red.png') },
+        { name: '4frame_blue', src: require('@/assets/frame/4frame_blue.png') },
+        { name: '4frame_green', src: require('@/assets/frame/4frame_green.png') },
+        { name: '4frame_purple', src: require('@/assets/frame/4frame_purple.png') }
+      ],
+      frames_pattern: [
+        { name: '4frame_white_pattern', src: require('@/assets/frame/4frame_white_pattern.png') },
+        { name: '4frame_black_pattern', src: require('@/assets/frame/4frame_black_pattern.png') },
+        { name: '4frame_red_pattern', src: require('@/assets/frame/4frame_red_pattern.png') },
+        { name: '4frame_blue_pattern', src: require('@/assets/frame/4frame_blue_pattern.png') },
+        { name: '4frame_green_pattern', src: require('@/assets/frame/4frame_green_pattern.png') },
+        { name: '4frame_purple_pattern', src: require('@/assets/frame/4frame_purple_pattern.png') }
+      ],
+      selectedFrame: null,
     };
   },
   methods: {
     setParticipantCount(count) {
       this.participantCount = count; 
+    },
+    selectFrame(frame) {
+      this.selectedFrame = frame.name;
     },
     joinSession() {
       if (this.RoomName) {
@@ -58,6 +105,7 @@ export default {
             sessionId: this.SessionId,
             userName: this.UserName,
             participantCount: this.participantCount, 
+            frame: this.selectedFrame
           },
         });
       } else {
@@ -67,3 +115,38 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+div {
+  padding: 10px;
+}
+
+.frame-options {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.frame-option {
+  text-align: center;
+}
+
+.frame-image {
+  width: 150px;
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.frame-image:hover {
+  transform: scale(1.1);
+}
+
+.selected-frame {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s;
+}
+
+</style>
