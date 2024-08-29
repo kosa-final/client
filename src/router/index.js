@@ -13,6 +13,7 @@ import Edit from '@/views/EditPage.vue';
 import LoginCompo from '@/views/LoginCompo.vue'; 
 import UserProfile from '@/views/UserProfile.vue'; 
 import MyPageCompo from '@/views/MyPageCompo.vue';
+import EditPageCompo from '@/views/EditPage.vue';
 
 Vue.use(Router);
 
@@ -73,6 +74,11 @@ export default new Router({
       path: '/mypage', 
       name: 'MyPage',
       component: MyPageCompo
+    },
+    {
+      path: '/editPage', 
+      name: 'EditPage',
+      component: EditPageCompo
     }
   ]
 });
