@@ -14,7 +14,6 @@
 	font-weight: bold;
 	text-align: center;
 	color: #DB574D;
-	margin: 50px;
 }
   
 .middleTitle {
@@ -68,10 +67,4 @@ input:focus {
 	color: white;
 	font-size: 12px;
 	margin: 0 30px;
-}
-
-
-video {
-	width: 500px;
-	height: auto;
 }

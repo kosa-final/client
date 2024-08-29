@@ -6,12 +6,14 @@ import Select from '@/views/SelectPage.vue';
 import Make from '@/views/MakePage.vue'; 
 import OneFrame from '@/views/OneFramePage.vue';
 import TwoFrame from '@/views/TwoFramePage.vue'; 
+import ThreeFrame from '@/views/ThreeFramePage.vue'; 
 import FourFrame from '@/views/FourFramePage.vue'; 
 import UserVideo from '@/components/video/UserVideo.vue'; 
 import Edit from '@/views/EditPage.vue'; 
 
 import LoginCompo from '@/views/LoginCompo.vue'; 
 import UserProfile from '@/views/UserProfile.vue'; 
+import MyPageCompo from '@/views/MyPageCompo.vue';
 
 Vue.use(Router);
 
@@ -44,6 +46,11 @@ export default new Router({
       component: TwoFrame
     },
     {
+      path: '/threeframe',
+      name: 'ThreeFrame',
+      component: ThreeFrame
+    },
+    {
       path: '/fourframe',
       name: 'FourFrame',
       component: FourFrame
@@ -67,6 +74,11 @@ export default new Router({
       path: '/profile',  
       name: 'UserProfile',
       component: UserProfile
+    },
+    {
+      path: '/mypage', 
+      name: 'MyPage',
+      component: MyPageCompo
     }
   ]
 });
