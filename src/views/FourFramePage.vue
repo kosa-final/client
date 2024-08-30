@@ -31,11 +31,20 @@
             class="btn"
             type="button"
             id="buttonLeaveSession"
-            @click="leaveSession"
-            value="Leave session"
+            @click="showLeaveModal"
+            value="방 나가기"
           />
           <button class="btn" @click="capturePhotoOrigin">캡처하기</button>
         </div>
+      </div>
+    </div>
+
+    <!-- 방 나가기 모달 -->
+    <div v-if="isLeaveModalVisible" class="modal">
+      <div class="modal-content">
+        <p>방을 나가시겠습니까?</p>
+        <button @click="leaveSession" class="modal-btn">나가기</button>
+        <button @click="hideLeaveModal" class="modal-btn">취소</button>
       </div>
     </div>
   </div>
@@ -66,6 +75,7 @@ export default {
       userName: this.$route.query.userName,
       selectedFrame: this.$route.query.frame,
       frameImageUrl: "",
+      isLeaveModalVisible: false, // 모달창 표시 상태
     };
   },
   methods: {
@@ -120,10 +130,8 @@ export default {
               insertMode: "APPEND",
               mirror: false,
             });
-
             this.mainStreamManager = publisher;
             this.publisher = publisher;
-
             // 퍼블리셔는 구독자 배열에 추가하지 않음
             this.session.publish(this.publisher);
             this.$nextTick(this.updateVideoStyles);
@@ -144,6 +152,15 @@ export default {
       this.subscribers = [];
       this.OV = undefined;
       window.removeEventListener("beforeunload", this.leaveSession);
+      this.$router.push('/')
+    },
+
+    showLeaveModal() {
+      this.isLeaveModalVisible = true;
+    },
+
+    hideLeaveModal() {
+      this.isLeaveModalVisible = false;
     },
 
     updateMainVideoStreamManager(stream) {
@@ -191,11 +208,9 @@ export default {
       });
     },
 
-    // Capture the photo-origin div
     capturePhotoOrigin() {
-      const element = this.$refs.photoOrigin;  // Reference to the photo-origin div
+      const element = this.$refs.photoOrigin; 
       html2canvas(element).then((canvas) => {
-        // Convert the canvas to a data URL and create a link to download it
         const link = document.createElement("a");
         link.href = canvas.toDataURL("image/png");
         link.download = "capture.png";
@@ -266,4 +281,34 @@ export default {
   transform: scaleX(-1); /* 좌우반전 */
 }
 
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.modal-btn {
+  margin: 10px;
+  padding: 10px 20px;
+  background-color: #DB574D;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 5px;
+}
 </style>
