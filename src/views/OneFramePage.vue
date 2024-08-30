@@ -2,24 +2,26 @@
   <div id="session">
     <div class="largeTitle">4컷 프레임 테스트</div>
     <div class="container">
-      <div class="photo-origin">
-        <!-- 프레임 이미지 -->
-        <img :src="frameImageUrl" alt="Frame" class="frame-image" />
+      <div class="video-container">
+        <div class="photo-origin" ref="photoOrigin">
+          <!-- 프레임 이미지 -->
+          <img :src="frameImageUrl" alt="Frame" class="frame-image" />
 
-        <!-- 비디오 (퍼블리셔 + 구독자들) -->
-        <div class="video">
-          <user-video
-            :stream-manager="publisher"
-            @click.native="updateMainVideoStreamManager(publisher)"
-            class="video-item"
-          />
-          <user-video
-            v-for="sub in subscribers"
-            :key="sub.stream.connection.connectionId"
-            :stream-manager="sub"
-            @click.native="updateMainVideoStreamManager(sub)"
-            class="video-item"
-          />
+          <!-- 비디오 (퍼블리셔 + 구독자들) -->
+          <div class="video">
+            <user-video
+              :stream-manager="publisher"
+              @click.native="updateMainVideoStreamManager(publisher)"
+              class="video-item"
+            />
+            <user-video
+              v-for="sub in subscribers"
+              :key="sub.stream.connection.connectionId"
+              :stream-manager="sub"
+              @click.native="updateMainVideoStreamManager(sub)"
+              class="video-item"
+            />
+          </div>
         </div>
       </div>
       <div class="controls-container">
@@ -32,6 +34,8 @@
             @click="leaveSession"
             value="Leave session"
           />
+          <!-- 캡처 버튼 추가 -->
+          <button class="btn btn-large btn-primary" @click="capturePhotoOrigin">캡처하기</button>
         </div>
       </div>
     </div>
@@ -42,14 +46,14 @@
 import axios from "axios";
 import { OpenVidu } from "openvidu-browser";
 import UserVideo from "@/components/video/UserVideo";
-import frameImage from "@/assets/basicFrame.png";
+import html2canvas from "html2canvas";
 
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
 const APPLICATION_SERVER_URL = "https://4cutstudio.store/";
 
 export default {
-  name: "EnterPage",
+  name: "OneFramePage",
   components: {
     UserVideo,
   },
@@ -62,19 +66,36 @@ export default {
       subscribers: [],
       sessionId: this.$route.query.sessionId,
       userName: this.$route.query.userName,
-      frameImageUrl: frameImage,
+      selectedFrame: this.$route.query.frame,
+      frameImageUrl: "",
     };
   },
   methods: {
-    // 세션에 참여하는 함수
+    setFrameImageUrl() {
+      if (this.selectedFrame) {
+        try {
+          this.frameImageUrl = require(`@/assets/frame/${this.selectedFrame}.png`);
+        } catch (error) {
+          console.error("Error loading frame image:", error);
+        }
+      } else {
+        alert("선택된 프레임이 없습니다");
+      }
+    },
+    
     joinSession() {
       this.OV = new OpenVidu();
       this.session = this.OV.initSession();
 
       this.session.on("streamCreated", ({ stream }) => {
+        // 참가자 수 제한
+        if (this.subscribers.length >= 0) {
+          alert("참가자 수가 최대 한도를 초과했습니다.");
+          this.$router.push('/make')
+        }
         const subscriber = this.session.subscribe(stream);
         this.subscribers.push(subscriber);
-        this.$nextTick(this.updateVideoStyles); // 비디오 스타일 업데이트
+        this.$nextTick(this.updateVideoStyles);
       });
 
       this.session.on("streamDestroyed", ({ stream }) => {
@@ -106,10 +127,10 @@ export default {
             this.publisher = publisher;
 
             this.session.publish(this.publisher);
-            this.$nextTick(this.updateVideoStyles); // 비디오 스타일 업데이트
+            this.$nextTick(this.updateVideoStyles);
           })
           .catch((error) => {
-            console.log("세션에 연결하는 중 오류 발생:", error.code, error.message);
+            console.log("Error connecting to session:", error.code, error.message);
           });
       });
 
@@ -162,27 +183,54 @@ export default {
       return response.data;
     },
 
-    // 비디오 스타일 강제 적용 함수
+    // Force apply video styles function
     updateVideoStyles() {
-  const videos = this.$el.querySelectorAll("video");
-  videos.forEach((video) => {
-    video.style.width = "100%";
-    video.style.height = "100%";
-    video.style.objectFit = "cover";
-  });
-}
+      const videos = this.$el.querySelectorAll("video");
+      videos.forEach((video) => {
+        video.style.width = "100%";
+        video.style.height = "100%";
+        video.style.objectFit = "cover";
+      });
+    },
 
+    capturePhotoOrigin() {
+      const element = this.$refs.photoOrigin;  
+      html2canvas(element).then((canvas) => {
+        const link = document.createElement("a");
+        link.href = canvas.toDataURL("image/png");
+        link.download = "capture.png";
+        link.click();
+      }).catch((error) => {
+        console.error("Error capturing photo-origin:", error);
+      });
+    }
   },
   updated() {
     this.updateVideoStyles();
   },
   created() {
+    this.setFrameImageUrl(); 
     this.joinSession();
   }
 };
 </script>
 
 <style scoped>
+.container {
+  width: 100%;
+  height: auto;
+  display: flex; 
+  justify-content: space-between;
+}
+
+.video-container {
+  width: 70%;
+}
+
+.controls-container {
+  width: 30%;
+}
+
 .photo-origin {
   position: relative;
   width: 600px; /* 전체 프레임의 너비 */
@@ -201,8 +249,8 @@ export default {
   position: absolute;
   width: 100%;
   height: 100%;
-  grid-template-columns: 300px 300px; /* 각 열의 넓이*/
-  grid-template-rows: 350px 350px; /* 각 행의 높이 */
+  grid-template-columns: 600px ;
+  grid-template-rows: 700px ;
   grid-gap: 0; /* 비디오 간의 간격 제거 */
   z-index: 1;
 }
@@ -220,5 +268,4 @@ export default {
 .video-item:nth-child(4) {
   transform: translateY(-8px) scaleX(-1); /* 8px 위로 이동하면서 좌우반전 */
 }
-
 </style>

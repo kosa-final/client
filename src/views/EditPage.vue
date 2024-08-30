@@ -34,7 +34,7 @@
       <div class="stickers">
         <img
           v-for="sticker in stickers"
-          :key="sticker"
+          :key="sticker" 
           :src="sticker"
           draggable="true"
           @dragstart="dragStart"
@@ -45,7 +45,7 @@
   </template>
   
   <script>
-  import frameImage from "@/assets/basicFrame.png"; // 프레임 이미지 가져오기
+  import frameImage from "@/assets/frame/4frame_black.png"; // 프레임 이미지 가져오기
   import sticker1 from "@/assets/Sticker/sticker1.png";
   import sticker2 from "@/assets/Sticker/sticker2.png";
   import sticker3 from "@/assets/Sticker/sticker3.png";

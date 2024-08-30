@@ -3,29 +3,40 @@
       <h2>My Page</h2>
       <p>환영합니다, {{ userInfo.nickname }}님</p>
   
+      <div v-if="photos.length > 0">
+        <div v-for="photo in photos" :key="photo.photo_id" class="photo-item">
+          <img :src="photo.complete_photo" alt="photo" class="photo-image">
+          <div class="photo-info">
+            <p class="room-name">{{ photo.room_name }}</p>
+            <p class="create-date">{{ formatDate(photo.create_date) }}</p>
+          </div>
+        </div>
+      </div>
+      <div v-else>
+        <p>사진이 없습니다.</p>
+      </div>
+  
       <button @click="showConfirmModal = true" class="delete-button">회원 탈퇴</button>
   
       <!-- 탈퇴 확인 모달 -->
       <div v-if="showConfirmModal" class="modal-overlay">
         <div class="modal">
-           <p class="confirm-text">정말 <span class="highlight">탈퇴</span>하시겠습니까?</p> <!-- 클래스 추가 -->
+           <p class="confirm-text">정말 <span class="highlight">탈퇴</span>하시겠습니까?</p>
            <div class="modal-actions">
               <button @click="confirmDelete" class="confirm-button">네</button>
               <button @click="showConfirmModal = false" class="cancel-button">아니오</button>
            </div>
         </div>
       </div>
-
+  
       <!-- 탈퇴 완료 모달 -->
       <div v-if="showCompletionModal" class="modal-overlay">
         <div class="modal">
-           <p class="completion-text">
-                회원 <span class="highlight">탈퇴</span>가 완료되었습니다.
-           </p> 
+           <p class="completion-text">회원 <span class="highlight">탈퇴</span>가 완료되었습니다.</p>
         </div>
       </div>
     </div>
-</template>
+  </template>
   
   <script>
   import axios from 'axios';
@@ -33,13 +44,13 @@
   export default {
     data() {
       return {
-        showConfirmModal: false, // 탈퇴 확인 모달 표시 여부
-        showCompletionModal: false, // 탈퇴 완료 모달 표시 여부
+        showConfirmModal: false,
+        showCompletionModal: false,
+        photos: [], // 사진 목록을 저장할 배열
       };
     },
     computed: {
       userInfo() {
-        console.log(this.$store.state.userInfo); // 콘솔에 출력하여 userInfo 확인
         return this.$store.state.userInfo;
       },
       accessToken() {
@@ -47,16 +58,46 @@
       }
     },
     methods: {
+      fetchUserPhotos() {
+        axios.get('http://localhost:8080/api/photolist', { withCredentials: true })
+          .then(response => {
+            this.photos = response.data; // 서버에서 받은 사진 데이터를 저장
+          })
+          .catch(error => {
+            console.error('사진 목록 불러오기 실패:', error);
+          });
+      },
+      formatDate(dateString) {
+        if (!dateString) {
+            return 'Invalid Date';
+        }
+        
+        const parts = dateString.split('/');
+        if (parts.length !== 3) {
+            return 'Invalid Date';
+        }
+
+        const formattedDate = `20${parts[2]}-${parts[1]}-${parts[0]}`; // '23/08/29' -> '2023-08-29'
+        const date = new Date(formattedDate);
+        
+        if (isNaN(date.getTime())) {
+            return 'Invalid Date';
+        }
+
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        return date.toLocaleDateString(undefined, options);
+        },
+
+
       confirmDelete() {
         axios.post('http://localhost:8080/api/kakao/deactivate', {}, {
-          withCredentials: true // 세션 쿠키를 포함하도록 설정
+          withCredentials: true
         })
         .then(() => {
-          this.showConfirmModal = false; // 확인 모달 닫기
-          this.showCompletionModal = true; // 완료 모달 열기
-          this.$store.commit('logout'); // Vuex의 logout mutation 호출
+          this.showConfirmModal = false;
+          this.showCompletionModal = true;
+          this.$store.commit('logout');
   
-          // 2초 후 메인페이지로 자동 이동
           setTimeout(() => {
             this.$router.push('/');
           }, 2000);
@@ -68,19 +109,12 @@
       }
     },
     mounted() {
-    if (!this.accessToken) {
-        alert("로그인이 필요합니다.");
-        this.$router.push('/login');
-    } else if (!this.userInfo || !this.userInfo.nickname) {
-        // 로컬 스토리지에서 데이터 복원
-        const storedUserInfo = {
-            id: localStorage.getItem('userId'),
-            properties: {
-                nickname: localStorage.getItem('nickname')
-            }
-        };
-        this.$store.commit('setUserInfo', storedUserInfo);
-    }
+      if (!this.accessToken) {
+          alert("로그인이 필요합니다.");
+          this.$router.push('/login');
+      } else {
+          this.fetchUserPhotos(); // 마운트 시 사용자 사진 데이터를 불러옴
+      }
     }
   }
   </script>
@@ -96,10 +130,37 @@
     color: #DB574D;
   }
   
+  .photo-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .photo-image {
+    width: 100px;
+    height: 100px;
+    margin-right: 15px;
+    object-fit: cover;
+  }
+  
+  .photo-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .room-name {
+    font-weight: bold;
+  }
+  
+  .create-date {
+    color: #888;
+    font-size: 14px;
+  }
+  
   .delete-button {
     margin-top: 20px;
     padding: 10px 20px;
-    background-color: DB574D;
+    background-color: #DB574D;
     color: white;
     border: none;
     cursor: pointer;
