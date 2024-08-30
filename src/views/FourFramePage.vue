@@ -48,7 +48,6 @@ import UserVideo from "@/components/video/UserVideo";
 import html2canvas from "html2canvas";
 
 axios.defaults.headers.post["Content-Type"] = "application/json";
-
 const APPLICATION_SERVER_URL = "https://4cutstudio.store/";
 
 export default {
@@ -87,13 +86,18 @@ export default {
       this.session = this.OV.initSession();
 
       this.session.on("streamCreated", ({ stream }) => {
+        // 참가자 수 제한
+        if (this.subscribers.length >= 3) {
+          alert("참가자 수가 최대 한도를 초과했습니다.");
+          this.$router.push('/make')
+        }
         const subscriber = this.session.subscribe(stream);
         this.subscribers.push(subscriber);
         this.$nextTick(this.updateVideoStyles);
       });
 
       this.session.on("streamDestroyed", ({ stream }) => {
-        const index = this.subscribers.indexOf(stream.streamManager, 0);
+        const index = this.subscribers.indexOf(stream.streamManager);
         if (index >= 0) {
           this.subscribers.splice(index, 1);
         }
@@ -120,6 +124,7 @@ export default {
             this.mainStreamManager = publisher;
             this.publisher = publisher;
 
+            // 퍼블리셔는 구독자 배열에 추가하지 않음
             this.session.publish(this.publisher);
             this.$nextTick(this.updateVideoStyles);
           })

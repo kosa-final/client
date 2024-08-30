@@ -88,6 +88,11 @@ export default {
       this.session = this.OV.initSession();
 
       this.session.on("streamCreated", ({ stream }) => {
+        // 참가자 수 제한
+        if (this.subscribers.length >= 0) {
+          alert("참가자 수가 최대 한도를 초과했습니다.");
+          this.$router.push('/make')
+        }
         const subscriber = this.session.subscribe(stream);
         this.subscribers.push(subscriber);
         this.$nextTick(this.updateVideoStyles);
@@ -188,11 +193,9 @@ export default {
       });
     },
 
-    // Capture the photo-origin div
     capturePhotoOrigin() {
-      const element = this.$refs.photoOrigin;  // Reference to the photo-origin div
+      const element = this.$refs.photoOrigin;  
       html2canvas(element).then((canvas) => {
-        // Convert the canvas to a data URL and create a link to download it
         const link = document.createElement("a");
         link.href = canvas.toDataURL("image/png");
         link.download = "capture.png";
@@ -206,7 +209,7 @@ export default {
     this.updateVideoStyles();
   },
   created() {
-    this.setFrameImageUrl(); // Set the frame image when component is created
+    this.setFrameImageUrl(); 
     this.joinSession();
   }
 };
@@ -246,8 +249,8 @@ export default {
   position: absolute;
   width: 100%;
   height: 100%;
-  grid-template-columns: 300px 300px; /* 각 열의 넓이*/
-  grid-template-rows: 350px 350px; /* 각 행의 높이 */
+  grid-template-columns: 600px ;
+  grid-template-rows: 700px ;
   grid-gap: 0; /* 비디오 간의 간격 제거 */
   z-index: 1;
 }
