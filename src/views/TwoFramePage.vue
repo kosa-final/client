@@ -88,6 +88,11 @@ export default {
       this.session = this.OV.initSession();
 
       this.session.on("streamCreated", ({ stream }) => {
+          // 참가자 수 제한
+          if (this.subscribers.length >= 1) {
+          alert("참가자 수가 최대 한도를 초과했습니다.");
+          this.$router.push('/make')
+        }
         const subscriber = this.session.subscribe(stream);
         this.subscribers.push(subscriber);
         this.$nextTick(this.updateVideoStyles);
@@ -230,7 +235,7 @@ export default {
 
 .photo-origin {
   position: relative;
-  width: 600px; /* 전체 프레임의 너비 */
+  width: 300px; /* 전체 프레임의 너비 */
   height: 800px; /* 전체 프레임의 높이 */
 }
 
@@ -246,8 +251,8 @@ export default {
   position: absolute;
   width: 100%;
   height: 100%;
-  grid-template-columns: 300px 300px; /* 각 열의 넓이*/
-  grid-template-rows: 350px 350px; /* 각 행의 높이 */
+  grid-template-columns: 300px ;
+  grid-template-rows: 350px 350px ;
   grid-gap: 0; /* 비디오 간의 간격 제거 */
   z-index: 1;
 }
@@ -261,8 +266,4 @@ export default {
   transform: scaleX(-1); /* 좌우반전 */
 }
 
-.video-item:nth-child(3),
-.video-item:nth-child(4) {
-  transform: translateY(-8px) scaleX(-1); /* 8px 위로 이동하면서 좌우반전 */
-}
 </style>
