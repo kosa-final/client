@@ -1,6 +1,6 @@
 <template>
   <div id="session">
-    <div class="largeTitle">4컷 프레임 테스트</div>
+    <div class="largeTitle">ENTER THE ROOM</div>
     <div class="container">
       <div class="video-container">
         <div class="photo-origin" ref="photoOrigin">
@@ -26,17 +26,20 @@
       </div>
       <div class="controls-container">
         <div id="session-header">
-          <h1 id="session-title">{{ sessionId }}</h1>
-          <input
-            class="btn btn-large btn-danger"
-            type="button"
-            id="buttonLeaveSession"
-            @click="leaveSession"
-            value="Leave session"
-          />
-          <!-- 캡처 버튼 추가 -->
-          <button class="btn btn-large btn-primary" @click="capturePhotoOrigin">캡처하기</button>
+          <p>{{ roomInfo.name }}</p>
+          <p>{{ sessionId }}</p>
+          <button class="btn" @click="capturePhotoOrigin">사진촬영</button>
+          <button class="btn" @click="showLeaveModal">방 나가기</button>
         </div>
+      </div>
+    </div>
+
+    <!-- 방 나가기 모달 -->
+    <div v-if="isLeaveModalVisible" class="modal">
+      <div class="modal-content">
+        <p>방을 나가시겠습니까?</p>
+        <button @click="leaveSession" class="modal-btn">나가기</button>
+        <button @click="hideLeaveModal" class="modal-btn">취소</button>
       </div>
     </div>
   </div>
@@ -49,13 +52,18 @@ import UserVideo from "@/components/video/UserVideo";
 import html2canvas from "html2canvas";
 
 axios.defaults.headers.post["Content-Type"] = "application/json";
-
 const APPLICATION_SERVER_URL = "https://4cutstudio.store/";
 
 export default {
-  name: "OneFramePage",
+  name: "FourFramePage",
   components: {
     UserVideo,
+  },
+  props: {
+    roomInfo: {
+      type: Object,
+      required: true
+    }
   },
   data() {
     return {
@@ -64,23 +72,16 @@ export default {
       mainStreamManager: undefined,
       publisher: undefined,
       subscribers: [],
-      sessionId: this.$route.query.sessionId,
-      userName: this.$route.query.userName,
-      selectedFrame: this.$route.query.frame,
+      sessionId: this.$route.params.sessionId,
+      userName: this.$route.params.userName,
+      selectedFrame: this.$route.params.frame,
       frameImageUrl: "",
+      isLeaveModalVisible: false, // 모달창 표시 상태
     };
   },
   methods: {
     setFrameImageUrl() {
-      if (this.selectedFrame) {
-        try {
-          this.frameImageUrl = require(`@/assets/frame/${this.selectedFrame}.png`);
-        } catch (error) {
-          console.error("Error loading frame image:", error);
-        }
-      } else {
-        alert("선택된 프레임이 없습니다");
-      }
+      this.frameImageUrl = require(`@/assets/frame/${this.selectedFrame}.png`);
     },
     
     joinSession() {
@@ -88,8 +89,8 @@ export default {
       this.session = this.OV.initSession();
 
       this.session.on("streamCreated", ({ stream }) => {
-          // 참가자 수 제한
-          if (this.subscribers.length >= 1) {
+        // 참가자 수 제한
+        if (this.subscribers.length >= 3) {
           alert("참가자 수가 최대 한도를 초과했습니다.");
           this.$router.push('/make')
         }
@@ -99,7 +100,7 @@ export default {
       });
 
       this.session.on("streamDestroyed", ({ stream }) => {
-        const index = this.subscribers.indexOf(stream.streamManager, 0);
+        const index = this.subscribers.indexOf(stream.streamManager);
         if (index >= 0) {
           this.subscribers.splice(index, 1);
         }
@@ -122,10 +123,9 @@ export default {
               insertMode: "APPEND",
               mirror: false,
             });
-
             this.mainStreamManager = publisher;
             this.publisher = publisher;
-
+            // 퍼블리셔는 구독자 배열에 추가하지 않음
             this.session.publish(this.publisher);
             this.$nextTick(this.updateVideoStyles);
           })
@@ -145,6 +145,15 @@ export default {
       this.subscribers = [];
       this.OV = undefined;
       window.removeEventListener("beforeunload", this.leaveSession);
+      this.$router.push('/')
+    },
+
+    showLeaveModal() {
+      this.isLeaveModalVisible = true;
+    },
+
+    hideLeaveModal() {
+      this.isLeaveModalVisible = false;
     },
 
     updateMainVideoStreamManager(stream) {
@@ -182,8 +191,7 @@ export default {
       );
       return response.data;
     },
-
-    // Force apply video styles function
+    
     updateVideoStyles() {
       const videos = this.$el.querySelectorAll("video");
       videos.forEach((video) => {
@@ -193,25 +201,36 @@ export default {
       });
     },
 
-    // Capture the photo-origin div
-    capturePhotoOrigin() {
-      const element = this.$refs.photoOrigin;  // Reference to the photo-origin div
-      html2canvas(element).then((canvas) => {
-        // Convert the canvas to a data URL and create a link to download it
-        const link = document.createElement("a");
-        link.href = canvas.toDataURL("image/png");
-        link.download = "capture.png";
-        link.click();
-      }).catch((error) => {
-        console.error("Error capturing photo-origin:", error);
-      });
+    async capturePhotoOrigin() {
+    const element = this.$refs.photoOrigin;
+
+    try {
+      const canvas = await html2canvas(element);
+      const imageData = canvas.toDataURL("image/png");
+
+      const response = await axios.post(
+        `http://localhost:8080/photo/save`,
+        { 
+          originPhoto: imageData,
+          roomId: this.roomInfo.roomId
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          }
+        }
+      );
+      console.log('Image saved successfully:', response.data);
+    } catch (error) {
+      console.error("Error capturing or saving image:", error.response ? error.response.data : error.message);
     }
+  }
   },
   updated() {
     this.updateVideoStyles();
   },
   created() {
-    this.setFrameImageUrl(); // Set the frame image when component is created
+    this.setFrameImageUrl();
     this.joinSession();
   }
 };
@@ -227,16 +246,18 @@ export default {
 
 .video-container {
   width: 70%;
+  padding: 100px;
 }
 
 .controls-container {
   width: 30%;
+  padding: 100px;
 }
 
 .photo-origin {
   position: relative;
-  width: 300px; /* 전체 프레임의 너비 */
-  height: 800px; /* 전체 프레임의 높이 */
+  width: 600px;
+  height: 800px;
 }
 
 .frame-image {
@@ -251,8 +272,8 @@ export default {
   position: absolute;
   width: 100%;
   height: 100%;
-  grid-template-columns: 300px ;
-  grid-template-rows: 350px 350px ;
+  grid-template-columns: 300px 300px; /* 각 열의 넓이*/
+  grid-template-rows: 350px 350px; /* 각 행의 높이 */
   grid-gap: 0; /* 비디오 간의 간격 제거 */
   z-index: 1;
 }
@@ -266,4 +287,34 @@ export default {
   transform: scaleX(-1); /* 좌우반전 */
 }
 
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.modal-btn {
+  margin: 10px;
+  padding: 10px 20px;
+  background-color: #DB574D;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 5px;
+}
 </style>

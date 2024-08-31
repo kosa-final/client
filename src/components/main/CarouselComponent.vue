@@ -28,12 +28,13 @@ export default {
       this.currentIndex = (this.currentIndex + 1) % this.images.length;
     },
     navigatorLogin(){
-      const userId = localStorage.getItem('userId') ;
-      if(!userId){
-        alert('로그인이 필요합니다.');
-      } else {
-        this.$router.push('/select');
-      }
+      // const userId = localStorage.getItem('userId') ;
+      // if(!userId){
+      //   alert('로그인이 필요합니다.');
+      // } else {
+      //   this.$router.push('/select');
+      // }
+      this.$router.push('/select');
     }
   }
 };
