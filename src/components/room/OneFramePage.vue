@@ -1,6 +1,6 @@
 <template>
   <div id="session">
-    <div class="largeTitle">4컷 프레임 테스트</div>
+    <div class="largeTitle">ENTER THE ROOM</div>
     <div class="container">
       <div class="video-container">
         <div class="photo-origin" ref="photoOrigin">

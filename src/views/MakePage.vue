@@ -44,19 +44,20 @@
       </div>
     </div>
     <div class="center marginBottom">
-      <button class="btn btn-lg btn-success" @click="joinSession">방 만들기</button>
+      <button class="btn" @click="joinSession">방 만들기</button>
     </div>
   </div>
 </template>
 
 <script>
+import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
 export default {
   name: "MakePage",
   data() {
     return {
-      UserName: "Participant" + Math.floor(Math.random() * 100),
+      UserName: Math.floor(Math.random() * 100),
       RoomName: "",
       SessionId: "",
       participantCount: 1,
@@ -146,36 +147,35 @@ export default {
     selectFrame(frame) {
       this.selectedFrame = frame.name;
     },
-    joinSession() {
+    async joinSession() {
       if (this.RoomName) {
         this.SessionId = uuidv4();
-        let targetPage = '';
 
-        if (this.participantCount === 1) {
-          targetPage = 'OneFrame';
-        } else if (this.participantCount === 2) {
-          targetPage = 'TwoFrame';
-        } else if (this.participantCount === 3) {
-          targetPage = 'ThreeFrame';
-        } else if (this.participantCount === 4) {
-          targetPage = 'FourFrame';
+        const payload = {
+          userId: Number(this.UserName),
+          userCount: this.participantCount,
+          roomName: this.RoomName,
+          roomSession: this.SessionId,
+          frameId: this.selectedFrame
+        };
+        
+        try {
+          await axios.post('http://localhost:8080/room/create', payload);
+
+          this.$router.push({
+            name: 'Room',
+            params: {
+              sessionId: this.SessionId,
+              userName: this.UserName,
+              participantCount: this.participantCount,
+              frame: this.selectedFrame
+            }
+          });
+
+        } catch (error) {
+          console.error('There was an error creating the room:', error);
+          alert('Failed to create room. Please try again.' + error);
         }
-
-        this.$router.push({
-          name: targetPage,
-          params: {
-            sessionId: this.SessionId,
-            userName: this.UserName,
-            participantCount: this.participantCount, 
-            frame: this.selectedFrame
-          },
-          query: {
-            sessionId: this.SessionId,
-            userName: this.UserName,
-            participantCount: this.participantCount, 
-            frame: this.selectedFrame
-          },
-        });
       } else {
         alert("방 이름을 입력하세요");
       }
