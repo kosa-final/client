@@ -3,12 +3,12 @@
     <div class="largeTitle">ENTER THE ROOM</div>
     <div class="container">
       <div class="video-container">
-        <div class="photo-origin" ref="photoOrigin">
+        <div class="photo-origin" ref="photoOrigin" :style="{ backgroundImage: hasCapturedPhoto ? `url(${photoImageUrl})` : '' }">
           <!-- 프레임 이미지 -->
           <img :src="frameImageUrl" alt="Frame" class="frame-image" />
 
           <!-- 비디오 (퍼블리셔 + 구독자들) -->
-          <div class="video">
+          <div class="video" v-if="!hasCapturedPhoto">
             <user-video
               :stream-manager="publisher"
               @click.native="updateMainVideoStreamManager(publisher)"
@@ -26,20 +26,29 @@
       </div>
       <div class="controls-container">
         <div id="session-header">
-          <p>{{ roomInfo.name }}</p>
-          <p>{{ sessionId }}</p>
-          <button class="btn" @click="capturePhotoOrigin">사진촬영</button>
-          <button class="btn" @click="showLeaveModal">방 나가기</button>
+          <p><span class="middleTitle">방 이름</span></p>
+          <p><span>dd</span></p>
+          <p><span class="middleTitle">초대코드</span></p>
+          <p><span>{{ roomSession }}</span></p>
+          <p>1. 입장 순서대로 프레임이 선정됩니다</p>
+          <p>2. 인원이 다 차면 자동으로 촬영 타이머가 시작되며</p>
+          <p>&nbsp;&nbsp;10초 이내에 사진을 찍어야 하며</p>
+          <p>&nbsp;&nbsp;10초 이내에 사진을 못 찍을 경우 10초일 때 자동으로 사진이 찍힙니다</p>
+          <p>3. 사진 촬영은 방장만 가능합니다</p>
+          <button class="btn-rounded" @click="capturePhotoOrigin">사진촬영</button>
         </div>
       </div>
+    </div>
+    <div class="center">
+      <button class="btn-large" @click="showLeaveModal">사진 꾸미러가기</button>
     </div>
 
     <!-- 방 나가기 모달 -->
     <div v-if="isLeaveModalVisible" class="modal">
       <div class="modal-content">
         <p>방을 나가시겠습니까?</p>
-        <button @click="leaveSession" class="modal-btn">나가기</button>
-        <button @click="hideLeaveModal" class="modal-btn">취소</button>
+        <button @click="leaveSession" class="modal-btn">네</button>
+        <button @click="hideLeaveModal" class="modal-btn">아니요</button>
       </div>
     </div>
   </div>
@@ -72,11 +81,13 @@ export default {
       mainStreamManager: undefined,
       publisher: undefined,
       subscribers: [],
-      sessionId: this.$route.params.sessionId,
-      userName: this.$route.params.userName,
+      roomSession: this.$route.params.roomSession,
+      userId: this.$route.params.userId,
       selectedFrame: this.$route.params.frame,
       frameImageUrl: "",
-      isLeaveModalVisible: false, // 모달창 표시 상태
+      isLeaveModalVisible: false,
+      photoImageUrl: "",
+      hasCapturedPhoto: false // 캡처한 사진 상태를 저장
     };
   },
   methods: {
@@ -110,9 +121,9 @@ export default {
         console.warn(exception);
       });
 
-      this.getToken(this.sessionId).then((token) => {
+      this.getToken(this.roomSession).then((token) => {
         this.session
-          .connect(token, { clientData: this.userName })
+          .connect(token, { clientData: this.userId })
           .then(() => {
             let publisher = this.OV.initPublisher(undefined, {
               audioSource: undefined,
@@ -145,7 +156,14 @@ export default {
       this.subscribers = [];
       this.OV = undefined;
       window.removeEventListener("beforeunload", this.leaveSession);
-      this.$router.push('/')
+      this.$router.push({
+        path: `/edit/${this.roomSession}`,
+        params: {
+          roomSession: this.roomSession,
+          userId: this.userId
+        }
+      });
+      console.log("page : " + this.roomSession);
     },
 
     showLeaveModal() {
@@ -161,15 +179,15 @@ export default {
       this.mainStreamManager = stream;
     },
 
-    async getToken(sessionId) {
-      const sessionIdFromServer = await this.createSession(sessionId);
-      return await this.createToken(sessionIdFromServer);
+    async getToken(roomSession) {
+      const roomSessionFromServer = await this.createSession(roomSession);
+      return await this.createToken(roomSessionFromServer);
     },
 
-    async createSession(sessionId) {
+    async createSession(roomSession) {
       const response = await axios.post(
         APPLICATION_SERVER_URL + "api/sessions",
-        { customSessionId: sessionId },
+        { customRoomSession: roomSession },
         {
           headers: {
             "Content-Type": "application/json",
@@ -179,9 +197,9 @@ export default {
       return response.data;
     },
 
-    async createToken(sessionIdFromServer) {
+    async createToken(roomSessionFromServer) {
       const response = await axios.post(
-        APPLICATION_SERVER_URL + "api/sessions/" + sessionIdFromServer + "/connections",
+        APPLICATION_SERVER_URL + "api/sessions/" + roomSessionFromServer + "/connections",
         {},
         {
           headers: {
@@ -202,29 +220,33 @@ export default {
     },
 
     async capturePhotoOrigin() {
-    const element = this.$refs.photoOrigin;
+      const element = this.$refs.photoOrigin;
 
-    try {
-      const canvas = await html2canvas(element);
-      const imageData = canvas.toDataURL("image/png");
+      try {
+        const canvas = await html2canvas(element);
+        const imageData = canvas.toDataURL("image/png");
+        
+        // 캡처한 이미지를 photoImageUrl에 저장하여 backgroundImage로 사용
+        this.photoImageUrl = imageData;
+        this.hasCapturedPhoto = true; // 사진이 캡처되었음을 표시
 
-      const response = await axios.post(
-        `http://localhost:8080/photo/save`,
-        { 
-          originPhoto: imageData,
-          roomId: this.roomInfo.roomId
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
+        const response = await axios.post(
+          "http://localhost:8080/photo/save",
+          { 
+            originPhoto: imageData,
+            roomId: this.roomInfo.roomId
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            }
           }
-        }
-      );
-      console.log('Image saved successfully:', response.data);
-    } catch (error) {
-      console.error("Error capturing or saving image:", error.response ? error.response.data : error.message);
+        );
+        console.log('Image saved successfully:', response.data);
+      } catch (error) {
+        console.error("Error capturing or saving image:", error.response ? error.response.data : error.message);
+      }
     }
-  }
   },
   updated() {
     this.updateVideoStyles();
@@ -237,27 +259,37 @@ export default {
 </script>
 
 <style scoped>
-.container {
+.session {
   width: 100%;
+  justify-content: center;
+}
+
+.container {
   height: auto;
   display: flex; 
-  justify-content: space-between;
+  justify-content: center;
 }
 
 .video-container {
-  width: 70%;
-  padding: 100px;
+  width: 50%;
+  padding: 100px 0;
+  display: flex; 
+  justify-content: center;
 }
 
 .controls-container {
-  width: 30%;
+  width: 40%;
   padding: 100px;
+  display: flex; 
+  justify-content: center;
 }
 
 .photo-origin {
   position: relative;
   width: 600px;
   height: 800px;
+  background-size: cover; /* 배경 이미지가 요소 크기에 맞게 조정됨 */
+  background-position: center; /* 배경 이미지가 중앙에 위치하도록 조정됨 */
 }
 
 .frame-image {
@@ -309,12 +341,5 @@ export default {
 
 .modal-btn {
   margin: 10px;
-  padding: 10px 20px;
-  background-color: #DB574D;
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  border-radius: 5px;
 }
 </style>

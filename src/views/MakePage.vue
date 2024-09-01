@@ -3,18 +3,18 @@
     <div class="largeTitle">MAKE A ROOM</div>
     <div class="center">
       <p class="middleTitle">참여자</p>
-      <input v-model="UserName" class="form-control" type="text" required />
+      <input v-model="userId" class="form-control" type="text" required />
     </div>
     <div class="center">
       <p class="middleTitle">방 이름 입력하기</p>
-      <input v-model="RoomName" class="form-control" type="text" required />
+      <input v-model="roomName" class="form-control" type="text" required />
     </div>
     <div class="center">
       <p class="middleTitle">방 인원 선택하기</p>
-      <button @click="setParticipantCount(1)" :class="{'btn-selected': participantCount === 1, 'btn-empty': participantCount !== 1}">1명</button>
-      <button @click="setParticipantCount(2)" :class="{'btn-selected': participantCount === 2, 'btn-empty': participantCount !== 2}">2명</button>
-      <button @click="setParticipantCount(3)" :class="{'btn-selected': participantCount === 3, 'btn-empty': participantCount !== 3}">3명</button>
-      <button @click="setParticipantCount(4)" :class="{'btn-selected': participantCount === 4, 'btn-empty': participantCount !== 4}">4명</button>
+      <button @click="setUserCount(1)" :class="{'btn-selected': userCount === 1, 'btn-empty': userCount !== 1}">1명</button>
+      <button @click="setUserCount(2)" :class="{'btn-selected': userCount === 2, 'btn-empty': userCount !== 2}">2명</button>
+      <button @click="setUserCount(3)" :class="{'btn-selected': userCount === 3, 'btn-empty': userCount !== 3}">3명</button>
+      <button @click="setUserCount(4)" :class="{'btn-selected': userCount === 4, 'btn-empty': userCount !== 4}">4명</button>
     </div>
     <div class="center">
       <p class="middleTitle">프레임 선택하기</p>
@@ -44,7 +44,7 @@
       </div>
     </div>
     <div class="center marginBottom">
-      <button class="btn" @click="joinSession">방 만들기</button>
+      <button class="btn-large" @click="joinSession">방 만들기</button>
     </div>
   </div>
 </template>
@@ -57,10 +57,10 @@ export default {
   name: "MakePage",
   data() {
     return {
-      UserName: Math.floor(Math.random() * 100),
-      RoomName: "",
-      SessionId: "",
-      participantCount: 1,
+      userId: Math.floor(Math.random() * 100),
+      roomName: "",
+      roomSession: "",
+      userCount: 1,
       frames: {
         1: [
           { name: '1frame_black', src: require('@/assets/frame/1frame_black.png') },
@@ -134,28 +134,28 @@ export default {
   },
   computed: {
     currentFrames() {
-      return this.frames[this.participantCount] || [];
+      return this.frames[this.userCount] || [];
     },
     currentPatternFrames() {
-      return this.frames_pattern[this.participantCount] || [];
+      return this.frames_pattern[this.userCount] || [];
     }
   },
   methods: {
-    setParticipantCount(count) {
-      this.participantCount = count; 
+    setUserCount(count) {
+      this.userCount = count; 
     },
     selectFrame(frame) {
       this.selectedFrame = frame.name;
     },
     async joinSession() {
-      if (this.RoomName) {
-        this.SessionId = uuidv4();
+      if (this.roomName) {
+        this.roomSession = uuidv4();
 
         const payload = {
-          userId: Number(this.UserName),
-          userCount: this.participantCount,
-          roomName: this.RoomName,
-          roomSession: this.SessionId,
+          userId: Number(this.userId),
+          userCount: this.userCount,
+          roomName: this.roomName,
+          roomSession: this.roomSession,
           frameId: this.selectedFrame
         };
         
@@ -165,9 +165,9 @@ export default {
           this.$router.push({
             name: 'Room',
             params: {
-              sessionId: this.SessionId,
-              userName: this.UserName,
-              participantCount: this.participantCount,
+              roomSession: this.roomSession,
+              userId: this.userId,
+              userCount: this.userCount,
               frame: this.selectedFrame
             }
           });
