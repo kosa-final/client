@@ -13,7 +13,7 @@ import FourFramePage from '@/components/room/FourFramePage.vue';
 
 export default {
   name: 'RoomPage',
-  props: ['sessionId', 'participantCount'],
+  props: ['roomSession', 'userCount'],
   components: {
     OneFramePage,
     TwoFramePage,
@@ -30,7 +30,7 @@ export default {
   },
   computed: {
     currentComponent() {
-      switch (this.participantCount) {
+      switch (this.userCount) {
         case 1:
           return 'OneFramePage';
         case 2:
@@ -50,7 +50,7 @@ export default {
         try {
           const response = await axios.get(`http://localhost:8080/room/info`, {
             params: {
-              roomSession: this.sessionId,
+              roomSession: this.roomSession,
             },
           });
 

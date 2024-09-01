@@ -34,7 +34,7 @@ input {
 
 input:focus {
 	outline: none;
-  }
+}
 
 /* 버튼 */
 .btn {
@@ -42,9 +42,10 @@ input:focus {
 	border: none;
 	border-radius: 25px;
 	text-align: center;
-	padding: 5px 20px;
+	padding: 5px 30px;
 	color: white;
-	font-size: 12px;
+	font-size: 16px;
+	margin: 0 30px;
 }
 
 .btn-empty {
@@ -52,9 +53,9 @@ input:focus {
 	border: 1px solid #DB574D;
 	border-radius: 25px;
 	text-align: center;
-	padding: 5px 20px;
+	padding: 5px 30px;
 	color: #DB574D;
-	font-size: 12px;
+	font-size: 16px;
 	margin: 0 30px;
 }
 
@@ -63,8 +64,43 @@ input:focus {
 	border: none;
 	border-radius: 25px;
 	text-align: center;
-	padding: 5px 20px;
+	padding: 5px 30px;
 	color: white;
-	font-size: 12px;
+	font-size: 16px;
 	margin: 0 30px;
 }
+
+.btn-large {
+	width: 500px;
+	background-color: #DB574D;
+	border: none;
+	border-radius: 25px;
+	text-align: center;
+	padding: 10px;
+	color: white;
+	font-size: 16px;
+}
+
+.btn-rounded {
+	width: 100px;
+	height: 100px;
+	background-color: transparent;
+	border: 1px solid #DB574D;
+	border-radius: 50%;
+	text-align: center;
+	color: #DB574D;
+	font-size: 16px;
+	line-height: 100px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	text-decoration: none;
+	transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .btn-rounded:hover {
+	background-color: #DB574D;
+	color: white;
+  }
+  

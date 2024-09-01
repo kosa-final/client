@@ -16,7 +16,7 @@
               class="color-field"
               @click="changeColor(color)"
             ></div>
-
+            
             <!-- 컬러피커 -->
             <input type="color" v-model="drawColor" class="color-picker" />
 
@@ -43,26 +43,27 @@
           </div>
 
           <!-- 기능 버튼들 -->
-          <button @click="clearCanvas" class="button">초기화</button>
-          <button @click="undoLast" class="button">되돌리기</button>
-          <button @click="saveCanvas" class="button">다운로드</button>
+          <button @click="clearCanvas" class="btn-rounded">초기화</button>
+          <button @click="undoLast" class="btn-rounded">되돌리기</button>
+          <button @click="saveCanvas" class="btn-rounded">다운로드</button>
         </div>
       </div>
     </div>
-    <div class="bottom-button">
-      <button @click="sendPhoto" class="send-button">사진 전송하기</button>
+    <div class="center">
+      <button @click="sendPhoto" class="btn-large">사진 전송하기</button>
     </div>
   </div>
 </template>
 
-
 <script>
-import frameImage from "@/assets/frame/4frame_black.png"; // 프레임 이미지 가져오기
+import axios from "axios";
 import sticker1 from "@/assets/Sticker/sticker1.png";
 import sticker2 from "@/assets/Sticker/sticker2.png";
 import sticker3 from "@/assets/Sticker/sticker3.png";
 
 export default {
+  name: 'EditPage',
+  props: ['roomSession', 'userId'],
   data() {
     return {
       canvas: null,
@@ -75,21 +76,35 @@ export default {
       colors: ["#212738", "#F97068", "#D1D646", "#57C4E5"],
       stickers: [sticker1, sticker2, sticker3], // 스티커 이미지 배열
       draggingSticker: null,
+      roomInfo: {}
     };
   },
   mounted() {
-    this.initializeCanvas();
+    this.fetchRoomInfo();
   },
   methods: {
+    async fetchRoomInfo() {
+      try {
+        const response = await axios.get(`http://localhost:8080/photo/info`, {
+          params: {
+            roomSession: this.roomSession
+          }
+        });
+        this.roomInfo = response.data;
+        this.initializeCanvas();
+      } catch (error) {
+        console.error('Error fetching room info:', error);
+      }
+    },
     initializeCanvas() {
       this.canvas = this.$refs.canvas;
       this.context = this.canvas.getContext("2d");
-      this.canvas.width = 600; 
+      this.canvas.width = 600;
       this.canvas.height = 800;
 
-      // 이미지 로드
+      // 프레임 이미지 로드
       const image = new Image();
-      image.src = frameImage;
+      image.src = this.roomInfo.originPhoto; // 프레임 이미지 URL 사용
       image.onload = () => {
         // 이미지가 로드되면 캔버스에 이미지를 그립니다.
         this.context.drawImage(image, 0, 0, this.canvas.width, this.canvas.height);
@@ -165,7 +180,7 @@ export default {
 
       // 배경 이미지를 다시 로드
       const image = new Image();
-      image.src = frameImage;
+      image.src = this.roomInfo.originPhoto; // 프레임 이미지 URL 사용
       image.onload = () => {
         this.context.drawImage(image, 0, 0, this.canvas.width, this.canvas.height);
       };
@@ -272,36 +287,7 @@ export default {
   cursor: move;
 }
 
-.bottom-button {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-}
-
-.send-button {
-  padding: 15px 30px;
-  background-color: #DB574D;
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  border-radius: 5px;
-  margin-bottom: 100px;
-  margin-right: 200px;
-}
-
-.button{
-  padding: 15px 30px;
-  background-color: white;
-  color: #DB574D;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  border-radius: 5px;
-}
-
 h2 {
   margin-bottom: -7px; /* h2와 tools 간의 간격 조정 */
 }
-
 </style>

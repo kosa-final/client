@@ -5,15 +5,12 @@ import Home from '@/views/HomePage.vue';
 import Select from '@/views/SelectPage.vue'; 
 import Make from '@/views/MakePage.vue';
 import Enter from '@/views/EnterPage.vue';
-import UserVideo from '@/components/video/UserVideo.vue'; 
 import Room from '@/views/RoomPage.vue';
-
 import Edit from '@/views/EditPage.vue'; 
 
 import LoginCompo from '@/views/LoginCompo.vue'; 
 import UserProfile from '@/views/UserProfile.vue'; 
 import MyPageCompo from '@/views/MyPageCompo.vue';
-import EditPageCompo from '@/views/EditPage.vue';
 
 Vue.use(Router);
 
@@ -47,14 +44,10 @@ export default new Router({
       props: true,
     },
     {
-      path: '/edit',
+      path: '/edit/:roomSession',
       name: 'Edit',
-      component: Edit
-    },
-    {
-      path: '/uservideo',
-      name: 'UserVideo',
-      component: UserVideo
+      component: Edit,
+      props: true,
     },
     {
       path: '/login',  
@@ -71,10 +64,5 @@ export default new Router({
       name: 'MyPage',
       component: MyPageCompo
     },
-    {
-      path: '/editPage', 
-      name: 'EditPage',
-      component: EditPageCompo
-    }
   ]
 });
