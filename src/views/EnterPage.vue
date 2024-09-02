@@ -1,5 +1,5 @@
 <template>
-  <div id="join-dialog">
+  <div>
     <div class="largeTitle">ENTER THE ROOM</div>
     <div class="center">
       <p class="middleTitle">참여자</p>
@@ -50,8 +50,9 @@ export default {
               params: {
                 roomSession: this.roomSession,
                 userId: this.userId,
-                participantCount: roomInfo.userCount,
-                frame: roomInfo.frameId
+                userCount: roomInfo.userCount,
+                frame: roomInfo.frameId,
+                isHost: false
               }
             });
           } else {
@@ -86,3 +87,9 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+div {
+  padding: 10px;
+}
+</style>

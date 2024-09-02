@@ -1,5 +1,5 @@
 <template>
-  <div id="session">
+  <div class="main-container">
     <div class="largeTitle">ENTER THE ROOM</div>
     <div class="container">
       <div class="video-container">
@@ -24,18 +24,19 @@
           </div>
         </div>
       </div>
-      <div class="controls-container">
+      <div class="right-panel">
         <div id="session-header">
           <p><span class="middleTitle">방 이름</span></p>
           <p><span>dd</span></p>
           <p><span class="middleTitle">초대코드</span></p>
           <p><span>{{ roomSession }}</span></p>
+          <p>방장여부: {{ isHost }}</p>
           <p>1. 입장 순서대로 프레임이 선정됩니다</p>
           <p>2. 인원이 다 차면 자동으로 촬영 타이머가 시작되며</p>
           <p>&nbsp;&nbsp;10초 이내에 사진을 찍어야 하며</p>
           <p>&nbsp;&nbsp;10초 이내에 사진을 못 찍을 경우 10초일 때 자동으로 사진이 찍힙니다</p>
           <p>3. 사진 촬영은 방장만 가능합니다</p>
-          <button class="btn-rounded" @click="capturePhotoOrigin">사진촬영</button>
+          <button class="btn-rounded" @click="capturePhotoOrigin" :disabled="!isCaptureButtonEnabled">사진촬영</button>
         </div>
       </div>
     </div>
@@ -68,12 +69,7 @@ export default {
   components: {
     UserVideo,
   },
-  props: {
-    roomInfo: {
-      type: Object,
-      required: true
-    }
-  },
+  props: ['roomInfo'],
   data() {
     return {
       OV: undefined,
@@ -87,7 +83,9 @@ export default {
       frameImageUrl: "",
       isLeaveModalVisible: false,
       photoImageUrl: "",
-      hasCapturedPhoto: false // 캡처한 사진 상태를 저장
+      hasCapturedPhoto: false,
+      isHost: this.$route.params.isHost,
+      isCaptureButtonEnabled: false,
     };
   },
   methods: {
@@ -103,17 +101,20 @@ export default {
         // 참가자 수 제한
         if (this.subscribers.length >= 3) {
           alert("참가자 수가 최대 한도를 초과했습니다.");
-          this.$router.push('/make')
+          this.$router.push('/make');
+        } else {
+          const subscriber = this.session.subscribe(stream);
+          this.subscribers.push(subscriber);
+          this.updateCaptureButtonState(); // 버튼 상태 업데이트
+          this.$nextTick(this.updateVideoStyles);
         }
-        const subscriber = this.session.subscribe(stream);
-        this.subscribers.push(subscriber);
-        this.$nextTick(this.updateVideoStyles);
       });
 
       this.session.on("streamDestroyed", ({ stream }) => {
-        const index = this.subscribers.indexOf(stream.streamManager);
+        const index = this.subscribers.indexOf(stream.streamManager, 0);
         if (index >= 0) {
           this.subscribers.splice(index, 1);
+          this.updateCaptureButtonState(); // 버튼 상태 업데이트
         }
       });
 
@@ -163,7 +164,6 @@ export default {
           userId: this.userId
         }
       });
-      console.log("page : " + this.roomSession);
     },
 
     showLeaveModal() {
@@ -184,10 +184,10 @@ export default {
       return await this.createToken(roomSessionFromServer);
     },
 
-    async createSession(roomSession) {
+    async createSession(roomSessionFromServer) {
       const response = await axios.post(
         APPLICATION_SERVER_URL + "api/sessions",
-        { customRoomSession: roomSession },
+        { customSessionId: roomSessionFromServer },
         {
           headers: {
             "Content-Type": "application/json",
@@ -219,7 +219,17 @@ export default {
       });
     },
 
+    updateCaptureButtonState() {
+      // 참가자 수가 3명이면 버튼을 활성화
+      this.isCaptureButtonEnabled = this.subscribers.length >= 3;
+    },
+
     async capturePhotoOrigin() {
+      if (!this.isHost) {
+        alert("방장만 사진을 촬영할 수 있습니다");
+        return;
+      }
+
       const element = this.$refs.photoOrigin;
 
       try {
@@ -228,9 +238,9 @@ export default {
         
         // 캡처한 이미지를 photoImageUrl에 저장하여 backgroundImage로 사용
         this.photoImageUrl = imageData;
-        this.hasCapturedPhoto = true; // 사진이 캡처되었음을 표시
+        this.hasCapturedPhoto = true;
 
-        const response = await axios.post(
+        await axios.post(
           "http://localhost:8080/photo/save",
           { 
             originPhoto: imageData,
@@ -242,7 +252,7 @@ export default {
             }
           }
         );
-        console.log('Image saved successfully:', response.data);
+        alert('이미지가 성공적으로 촬영되었습니다');
       } catch (error) {
         console.error("Error capturing or saving image:", error.response ? error.response.data : error.message);
       }
@@ -259,29 +269,31 @@ export default {
 </script>
 
 <style scoped>
-.session {
+.main-container {
+  position: relative;
   width: 100%;
-  justify-content: center;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .container {
-  height: auto;
-  display: flex; 
+  display: flex;
   justify-content: center;
+  align-items: flex-start;
+  flex-grow: 1;
+  margin-top: 20px;
 }
 
 .video-container {
-  width: 50%;
-  padding: 100px 0;
-  display: flex; 
-  justify-content: center;
+  margin-right: 180px;
 }
 
 .controls-container {
-  width: 40%;
-  padding: 100px;
-  display: flex; 
-  justify-content: center;
+  width: 300px; /* 우측 패널의 고정된 너비 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .photo-origin {

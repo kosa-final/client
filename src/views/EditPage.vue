@@ -1,5 +1,6 @@
 <template>
   <div class="main-container">
+    <div class="largeTitle">DECORATING ROOM</div>
     <div id="drawing-picture" class="drawing-container">
       <div class="canvas-container">
         <canvas ref="canvas"></canvas>

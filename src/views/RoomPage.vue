@@ -13,7 +13,7 @@ import FourFramePage from '@/components/room/FourFramePage.vue';
 
 export default {
   name: 'RoomPage',
-  props: ['roomSession', 'userCount'],
+  props: ['roomSession', 'userCount', 'isHost'],
   components: {
     OneFramePage,
     TwoFramePage,

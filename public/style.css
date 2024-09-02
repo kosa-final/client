@@ -99,8 +99,12 @@ input:focus {
 	transition: background-color 0.3s, color 0.3s;
   }
   
-  .btn-rounded:hover {
+  .btn-rounded:hover:not(:disabled) {
 	background-color: #DB574D;
 	color: white;
+  }
+  
+  .btn-rounded:disabled {
+	cursor: not-allowed; 
   }
   
