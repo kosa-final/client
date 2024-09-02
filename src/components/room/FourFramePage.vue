@@ -26,17 +26,23 @@
       </div>
       <div class="right-panel">
         <div id="session-header">
-          <p><span class="middleTitle">방 이름</span></p>
-          <p><span>dd</span></p>
-          <p><span class="middleTitle">초대코드</span></p>
-          <p><span>{{ roomSession }}</span></p>
-          <p>방장여부: {{ isHost }}</p>
+          <p class="middleTitle">방 이름</p>
+          <p>{{ roomInfo.roomName }}</p>
+          <p class="middleTitle">초대코드</p>
+          <p>{{ roomSession }}</p>
+          <p class="middleTitle">회원유형</p>
+          <p>{{ userRole }}</p>
+          <p class="middleTitle">안내사항</p>
           <p>1. 입장 순서대로 프레임이 선정됩니다</p>
-          <p>2. 인원이 다 차면 자동으로 촬영 타이머가 시작되며</p>
-          <p>&nbsp;&nbsp;10초 이내에 사진을 찍어야 하며</p>
-          <p>&nbsp;&nbsp;10초 이내에 사진을 못 찍을 경우 10초일 때 자동으로 사진이 찍힙니다</p>
-          <p>3. 사진 촬영은 방장만 가능합니다</p>
-          <button class="btn-rounded" @click="capturePhotoOrigin" :disabled="!isCaptureButtonEnabled">사진촬영</button>
+          <p>2. 인원이 다 차면 자동으로 촬영 버튼이 활성화됩니다</p>
+          <p>3. 인원이 다 차고 30초 이내에 사진을 찍어야 합니다</p>
+          <p>4. 30초 이내에 사진을 못 찍을 경우 자동으로 사진이 찍힙니다</p>
+          <p>5. 사진 촬영은 방장만 가능합니다</p>
+          <button class="btn-rounded"
+                  @click="capturePhotoOrigin"
+                  :disabled="!isCaptureButtonEnabled || hasCapturedPhoto">
+          사진촬영
+          </button>
         </div>
       </div>
     </div>
@@ -47,6 +53,7 @@
     <!-- 방 나가기 모달 -->
     <div v-if="isLeaveModalVisible" class="modal">
       <div class="modal-content">
+        <p>방을 나가면 다시 못 돌아옵니다</p>
         <p>방을 나가시겠습니까?</p>
         <button @click="leaveSession" class="modal-btn">네</button>
         <button @click="hideLeaveModal" class="modal-btn">아니요</button>
@@ -87,6 +94,11 @@ export default {
       isHost: this.$route.params.isHost,
       isCaptureButtonEnabled: false,
     };
+  },
+  computed: {
+    userRole() {
+      return this.isHost ? '방장' : '참가자';
+    },
   },
   methods: {
     setFrameImageUrl() {
@@ -236,10 +248,10 @@ export default {
         const canvas = await html2canvas(element);
         const imageData = canvas.toDataURL("image/png");
         
-        // 캡처한 이미지를 photoImageUrl에 저장하여 backgroundImage로 사용
         this.photoImageUrl = imageData;
         this.hasCapturedPhoto = true;
-
+        this.isCaptureButtonEnabled = false;
+        
         await axios.post(
           "http://localhost:8080/photo/save",
           { 

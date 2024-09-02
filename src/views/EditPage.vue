@@ -51,7 +51,7 @@
       </div>
     </div>
     <div class="center">
-      <button @click="sendPhoto" class="btn-large">사진 전송하기</button>
+      <button class="btn-large" @click="sendPhoto">사진 전송하기</button>
     </div>
   </div>
 </template>
@@ -214,7 +214,13 @@ export default {
     },
     // 하단 버튼 클릭 시 사진 전송 (예시로 alert 추가)
     sendPhoto() {
-      alert("사진이 전송되었습니다!");
+      this.$router.push({
+        path: `/save/${this.roomSession}`,
+        params: {
+          roomSession: this.roomSession,
+          userId: this.userId
+        }
+      });
     },
   },
 };
