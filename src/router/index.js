@@ -38,7 +38,7 @@ export default new Router({
       component: Enter
     },
     {
-      path: '/enter/:sessionId',
+      path: '/enter/:roomSession',
       name: 'Room',
       component: Room,
       props: true,

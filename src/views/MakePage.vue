@@ -1,5 +1,5 @@
 <template>
-  <div id="join-dialog">
+  <div>
     <div class="largeTitle">MAKE A ROOM</div>
     <div class="center">
       <p class="middleTitle">참여자</p>
@@ -130,6 +130,7 @@ export default {
         ]
       },
       selectedFrame: null,
+      isHost: true
     };
   },
   computed: {
@@ -168,19 +169,19 @@ export default {
               roomSession: this.roomSession,
               userId: this.userId,
               userCount: this.userCount,
-              frame: this.selectedFrame
+              frame: this.selectedFrame,
+              isHost: true
             }
           });
 
         } catch (error) {
-          console.error('There was an error creating the room:', error);
-          alert('Failed to create room. Please try again.' + error);
+          alert('Error creating room: ' + error);
         }
       } else {
-        alert("방 이름을 입력하세요");
+        alert("Please enter a room name.");
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
