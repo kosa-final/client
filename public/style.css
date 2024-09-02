@@ -4,8 +4,8 @@
 }
 
 /* 간격 */
-.marginBottom {
-	margin-bottom: 30px;
+.padding {
+	margin: 50px;
 }
 
 /* 폰트 사이즈 */
@@ -19,7 +19,6 @@
 .middleTitle {
 	font-size: 20px;
 	font-weight: bold;
-	text-align: center;
 }
 
 /* 입력폼 */
@@ -77,6 +76,7 @@ input:focus {
 	border-radius: 25px;
 	text-align: center;
 	padding: 10px;
+	margin: 50px;
 	color: white;
 	font-size: 16px;
 }
