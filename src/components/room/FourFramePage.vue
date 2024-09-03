@@ -312,10 +312,14 @@ export default {
   position: relative;
   width: 600px;
   height: 800px;
-  background-size: cover; /* 배경 이미지가 요소 크기에 맞게 조정됨 */
-  background-position: center; /* 배경 이미지가 중앙에 위치하도록 조정됨 */
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat; /* 이미지가 반복되지 않도록 설정 */
 }
-
+.photo-origin img {
+  width: 100%;
+  height: auto; /* 비율에 맞춰 이미지가 조정되도록 설정 */
+}
 .frame-image {
   position: absolute;
   width: 100%;

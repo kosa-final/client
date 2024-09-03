@@ -7,7 +7,6 @@
       </div>
       <div class="right-panel">
         <div class="tools">
-          <!-- 컬러 선택 버튼 -->
           <h2>펜 색상</h2>
           <div class="color-tools">
             <div
@@ -17,20 +16,9 @@
               class="color-field"
               @click="changeColor(color)"
             ></div>
-            
-            <!-- 컬러피커 -->
             <input type="color" v-model="drawColor" class="color-picker" />
-
-            <!-- 펜 굵기 조절 -->
-            <input
-              type="range"
-              v-model="drawWidth"
-              min="1"
-              max="100"
-              class="pen-range"
-            />
+            <input type="range" v-model="drawWidth" min="1" max="100" class="pen-range" />
           </div>
-          <!-- 스티커 영역 -->
           <h2>스티커</h2>
           <div class="stickers">
             <img
@@ -42,16 +30,13 @@
               class="sticker-image"
             />
           </div>
-
-          <!-- 기능 버튼들 -->
           <button @click="clearCanvas" class="btn-rounded">초기화</button>
           <button @click="undoLast" class="btn-rounded">되돌리기</button>
-          <button @click="saveCanvas" class="btn-rounded">다운로드</button>
         </div>
       </div>
     </div>
     <div class="center">
-      <button class="btn-large" @click="sendPhoto">사진 전송하기</button>
+      <button class="btn-large" @click="saveCanvas">사진 전송하기</button>
     </div>
   </div>
 </template>
@@ -75,7 +60,7 @@ export default {
       restoreArray: [],
       index: -1,
       colors: ["#212738", "#F97068", "#D1D646", "#57C4E5"],
-      stickers: [sticker1, sticker2, sticker3], // 스티커 이미지 배열
+      stickers: [sticker1, sticker2, sticker3],
       draggingSticker: null,
       roomInfo: {}
     };
@@ -87,9 +72,7 @@ export default {
     async fetchRoomInfo() {
       try {
         const response = await axios.get(`http://localhost:8080/photo/info`, {
-          params: {
-            roomSession: this.roomSession
-          }
+          params: { roomSession: this.roomSession }
         });
         this.roomInfo = response.data;
         this.initializeCanvas();
@@ -100,29 +83,48 @@ export default {
     initializeCanvas() {
       this.canvas = this.$refs.canvas;
       this.context = this.canvas.getContext("2d");
-      this.canvas.width = 600;
+      this.canvas.width = 650;
       this.canvas.height = 800;
 
-      // 프레임 이미지 로드
       const image = new Image();
-      image.src = this.roomInfo.originPhoto; // 프레임 이미지 URL 사용
+      image.crossOrigin = "Anonymous";
+      image.src = this.roomInfo.originPhoto;
       image.onload = () => {
-        // 이미지가 로드되면 캔버스에 이미지를 그립니다.
         this.context.drawImage(image, 0, 0, this.canvas.width, this.canvas.height);
       };
 
-      // 이벤트 리스너 등록
       this.canvas.addEventListener("mousedown", this.startDrawing);
       this.canvas.addEventListener("mousemove", this.draw);
       this.canvas.addEventListener("mouseup", this.stopDrawing);
       this.canvas.addEventListener("mouseout", this.stopDrawing);
-
       this.canvas.addEventListener("touchstart", this.startDrawing);
       this.canvas.addEventListener("touchmove", this.draw);
       this.canvas.addEventListener("touchend", this.stopDrawing);
-
       this.canvas.addEventListener("dragover", this.allowDrop);
       this.canvas.addEventListener("drop", this.dropSticker);
+    },
+    async saveCanvas() {
+      const imageBase64 = this.canvas.toDataURL('image/png');
+      const photoData = {
+        originPhoto: imageBase64,
+        roomId: this.roomInfo.roomId // roomInfo에서 roomId 가져옴
+      };
+      
+      try {
+        const response = await axios.post('http://localhost:8080/photo/save', photoData, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+        console.log('Image successfully uploaded to S3:', response.data);
+        this.navigateToSavePage(response.data);
+      } catch (error) {
+        console.error('Error uploading image to S3:', error.response ? error.response.data : error.message);
+      }
+    },
+    navigateToSavePage(imageUrl) {
+      this.$router.push({
+        path: `/savepage/${this.roomSession}`,
+        query: { imageUrl, userId: this.userId }
+      });
     },
     changeColor(color) {
       this.drawColor = color;
@@ -130,30 +132,21 @@ export default {
     startDrawing(event) {
       this.isDrawing = true;
       this.context.beginPath();
-      this.context.moveTo(
-        event.clientX - this.canvas.offsetLeft,
-        event.clientY - this.canvas.offsetTop
-      );
+      this.context.moveTo(event.clientX - this.canvas.offsetLeft, event.clientY - this.canvas.offsetTop);
       event.preventDefault();
 
       if (event.type !== "mouseout") {
-        // 이전 상태를 저장하기
         if (this.index < this.restoreArray.length - 1) {
           this.restoreArray = this.restoreArray.slice(0, this.index + 1);
         }
-        this.restoreArray.push(
-          this.context.getImageData(0, 0, this.canvas.width, this.canvas.height)
-        );
+        this.restoreArray.push(this.context.getImageData(0, 0, this.canvas.width, this.canvas.height));
         this.index += 1;
       }
     },
     draw(event) {
       if (!this.isDrawing) return;
 
-      this.context.lineTo(
-        event.clientX - this.canvas.offsetLeft,
-        event.clientY - this.canvas.offsetTop
-      );
+      this.context.lineTo(event.clientX - this.canvas.offsetLeft, event.clientY - this.canvas.offsetTop);
       this.context.strokeStyle = this.drawColor;
       this.context.lineWidth = this.drawWidth;
       this.context.lineCap = "round";
@@ -178,26 +171,20 @@ export default {
     },
     clearCanvas() {
       this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-      // 배경 이미지를 다시 로드
       const image = new Image();
-      image.src = this.roomInfo.originPhoto; // 프레임 이미지 URL 사용
+      image.src = this.roomInfo.originPhoto;
       image.onload = () => {
         this.context.drawImage(image, 0, 0, this.canvas.width, this.canvas.height);
       };
-
       this.restoreArray = [];
       this.index = -1;
     },
-    // 스티커 드래그 시작
     dragStart(event) {
       this.draggingSticker = event.target;
     },
-    // 캔버스로 드래그 허용
     allowDrop(event) {
       event.preventDefault();
     },
-    // 스티커 드랍
     dropSticker(event) {
       event.preventDefault();
       const x = event.clientX - this.canvas.offsetLeft;
@@ -205,27 +192,14 @@ export default {
       const sticker = new Image();
       sticker.src = this.draggingSticker.src;
       sticker.onload = () => {
-        this.context.drawImage(sticker, x, y, 100, 100); // 스티커 크기는 100x100으로 설정
-        this.restoreArray.push(
-          this.context.getImageData(0, 0, this.canvas.width, this.canvas.height)
-        );
+        this.context.drawImage(sticker, x, y, 100, 100);
+        this.restoreArray.push(this.context.getImageData(0, 0, this.canvas.width, this.canvas.height));
         this.index += 1;
       };
-    },
-    // 하단 버튼 클릭 시 사진 전송 (예시로 alert 추가)
-    sendPhoto() {
-      this.$router.push({
-        path: `/save/${this.roomSession}`,
-        params: {
-          roomSession: this.roomSession,
-          userId: this.userId
-        }
-      });
-    },
-  },
+    }
+  }
 };
 </script>
-
 <style>
 .main-container {
   position: relative;
