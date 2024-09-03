@@ -161,23 +161,25 @@ export default {
       this.isDrawing = false;
       event.preventDefault();
     },
-    undoLast() {
-      if (this.index <= 0) {
-        this.clearCanvas();
-      } else {
-        this.index -= 1;
-        this.context.putImageData(this.restoreArray[this.index], 0, 0);
-      }
-    },
     clearCanvas() {
-      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      const image = new Image();
-      image.src = this.roomInfo.originPhoto;
-      image.onload = () => {
-        this.context.drawImage(image, 0, 0, this.canvas.width, this.canvas.height);
-      };
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    const image = new Image();
+    image.crossOrigin = "Anonymous";
+    image.src = this.roomInfo.originPhoto;
+    image.onload = () => {
+      this.context.drawImage(image, 0, 0, this.canvas.width, this.canvas.height);
       this.restoreArray = [];
       this.index = -1;
+     };
+   },
+   undoLast() {
+    if (this.index <= 0) {
+      this.clearCanvas();
+    } else {
+      this.index -= 1;
+      this.context.putImageData(this.restoreArray[this.index], 0, 0);
+    }
     },
     dragStart(event) {
       this.draggingSticker = event.target;
