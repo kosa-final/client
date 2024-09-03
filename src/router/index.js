@@ -11,6 +11,7 @@ import Edit from '@/views/EditPage.vue';
 import LoginCompo from '@/views/LoginCompo.vue'; 
 import UserProfile from '@/views/UserProfile.vue'; 
 import MyPageCompo from '@/views/MyPageCompo.vue';
+import SaveCompo from '@/views/SavePage.vue';
 
 Vue.use(Router);
 
@@ -63,6 +64,11 @@ export default new Router({
       path: '/mypage', 
       name: 'MyPage',
       component: MyPageCompo
+    },
+    {
+      path: '/savepage/:roomSession',
+      name: 'SavePage',
+      component: SaveCompo
     },
   ]
 });
