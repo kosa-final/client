@@ -7,11 +7,11 @@ import Make from '@/views/MakePage.vue';
 import Enter from '@/views/EnterPage.vue';
 import Room from '@/views/RoomPage.vue';
 import Edit from '@/views/EditPage.vue'; 
+import Save from '@/views/SavePage.vue';
 
 import LoginCompo from '@/views/LoginCompo.vue'; 
 import UserProfile from '@/views/UserProfile.vue'; 
 import MyPageCompo from '@/views/MyPageCompo.vue';
-import SaveCompo from '@/views/SavePage.vue';
 
 import CommunityCompo from '@/views/CommunityCompo.vue';
 import PictureDetail from '@/views/PictureDetail.vue'; 
@@ -51,6 +51,12 @@ export default new Router({
       path: '/edit/:roomSession',
       name: 'Edit',
       component: Edit,
+      props: true,
+    },
+    {
+      path: '/save/:roomSession',
+      name: 'Save',
+      component: Save,
       props: true,
     },
     {
