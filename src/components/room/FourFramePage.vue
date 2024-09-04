@@ -3,7 +3,7 @@
     <div class="largeTitle">ENTER THE ROOM</div>
     <div class="container">
       <div class="video-container">
-        <div class="photo-origin" ref="photoOrigin" :style="{ backgroundImage: hasCapturedPhoto ? `url(${photoImageUrl})` : '' }">
+        <div class="photo-origin" ref="photoOrigin" :style="{ backgroundImage: hasCapturedPhoto ? 'url(' + photoImageUrl + ')' : '' }">
           <!-- 프레임 이미지 -->
           <img :src="frameImageUrl" alt="Frame" class="frame-image" />
 
@@ -38,10 +38,8 @@
           <p>3. 인원이 다 차고 30초 이내에 사진을 찍어야 합니다</p>
           <p>4. 30초 이내에 사진을 못 찍을 경우 자동으로 사진이 찍힙니다</p>
           <p>5. 사진 촬영은 방장만 가능합니다</p>
-          <button class="btn-rounded"
-                  @click="capturePhotoOrigin"
-                  :disabled="!isCaptureButtonEnabled || hasCapturedPhoto">
-          사진촬영
+          <button class="btn-rounded" @click="capturePhotoOrigin" :disabled="!isCaptureButtonEnabled || hasCapturedPhoto">
+            사진촬영
           </button>
         </div>
       </div>
@@ -86,6 +84,7 @@ export default {
       subscribers: [],
       roomSession: this.$route.params.roomSession,
       userId: this.$route.params.userId,
+      userNickname: this.$route.params.userNickname, // 닉네임 추가
       selectedFrame: this.$route.params.frame,
       frameImageUrl: "",
       isLeaveModalVisible: false,
@@ -109,53 +108,60 @@ export default {
       this.OV = new OpenVidu();
       this.session = this.OV.initSession();
 
+      // 사진 공유 신호 수신
+      this.session.on('signal:photo-shared', event => {
+        this.photoImageUrl = event.data;
+        this.hasCapturedPhoto = true;
+      });
+
+      // 새로운 스트림이 생성되었을 때 처리
       this.session.on("streamCreated", ({ stream }) => {
-        // 참가자 수 제한
         if (this.subscribers.length >= 3) {
           alert("참가자 수가 최대 한도를 초과했습니다.");
           this.$router.push('/make');
         } else {
           const subscriber = this.session.subscribe(stream);
           this.subscribers.push(subscriber);
-          this.updateCaptureButtonState(); // 버튼 상태 업데이트
+          this.updateCaptureButtonState(); 
           this.$nextTick(this.updateVideoStyles);
         }
       });
 
-      this.session.on("streamDestroyed", ({ stream }) => {
-        const index = this.subscribers.indexOf(stream.streamManager, 0);
-        if (index >= 0) {
-          this.subscribers.splice(index, 1);
-          this.updateCaptureButtonState(); // 버튼 상태 업데이트
-        }
-      });
-
-      this.session.on("exception", ({ exception }) => {
-        console.warn(exception);
-      });
-
+      // OpenVidu 토큰을 받아 세션에 연결
       this.getToken(this.roomSession).then((token) => {
         this.session
-          .connect(token, { clientData: this.userId })
+          .connect(token, { clientData: JSON.stringify({ userId: this.userId, nickname: this.userNickname }) }) // 닉네임과 userId 전달
           .then(() => {
             let publisher = this.OV.initPublisher(undefined, {
-              audioSource: undefined,
-              videoSource: undefined,
-              publishAudio: true,
-              publishVideo: true,
+              audioSource: undefined, 
+              videoSource: undefined, 
+              publishAudio: true, 
+              publishVideo: true, 
               frameRate: 30,
               insertMode: "APPEND",
               mirror: false,
+              resolution: "600x800"
             });
             this.mainStreamManager = publisher;
             this.publisher = publisher;
-            // 퍼블리셔는 구독자 배열에 추가하지 않음
             this.session.publish(this.publisher);
             this.$nextTick(this.updateVideoStyles);
           })
           .catch((error) => {
             console.log("Error connecting to session:", error.code, error.message);
           });
+      });
+
+      this.session.on("streamDestroyed", ({ stream }) => {
+        const index = this.subscribers.indexOf(stream.streamManager, 0);
+        if (index >= 0) {
+          this.subscribers.splice(index, 1);
+          this.updateCaptureButtonState(); 
+        }
+      });
+
+      this.session.on("exception", ({ exception }) => {
+        console.warn(exception);
       });
 
       window.addEventListener("beforeunload", this.leaveSession);
@@ -232,7 +238,6 @@ export default {
     },
 
     updateCaptureButtonState() {
-      // 참가자 수가 3명이면 버튼을 활성화
       this.isCaptureButtonEnabled = this.subscribers.length >= 3;
     },
 
@@ -245,14 +250,17 @@ export default {
       const element = this.$refs.photoOrigin;
 
       try {
-        const canvas = await html2canvas(element);
+        const canvas = await html2canvas(element, {
+          width: 600,   
+          height: 800,  
+        });
         const imageData = canvas.toDataURL("image/png");
-        
+
         this.photoImageUrl = imageData;
         this.hasCapturedPhoto = true;
         this.isCaptureButtonEnabled = false;
-        
-        await axios.post(
+
+        const response = await axios.post(
           "http://localhost:8080/photo/save",
           { 
             originPhoto: imageData,
@@ -264,11 +272,20 @@ export default {
             }
           }
         );
+
+        this.photoImageUrl = response.data;  
+
+        this.session.signal({
+          data: this.photoImageUrl, 
+          to: [],                   
+          type: 'photo-shared'       
+        });
+
         alert('이미지가 성공적으로 촬영되었습니다');
       } catch (error) {
         console.error("Error capturing or saving image:", error.response ? error.response.data : error.message);
       }
-    }
+    },
   },
   updated() {
     this.updateVideoStyles();
@@ -302,7 +319,7 @@ export default {
 }
 
 .controls-container {
-  width: 300px; /* 우측 패널의 고정된 너비 */
+  width: 300px; 
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -314,17 +331,19 @@ export default {
   height: 800px;
   background-size: contain;
   background-position: center;
-  background-repeat: no-repeat; /* 이미지가 반복되지 않도록 설정 */
+  background-repeat: no-repeat;
 }
+
 .photo-origin img {
   width: 100%;
-  height: auto; /* 비율에 맞춰 이미지가 조정되도록 설정 */
+  height: auto;
 }
+
 .frame-image {
   position: absolute;
   width: 100%;
   height: 100%;
-  z-index: 2; /* 프레임을 최상단에 위치 */
+  z-index: 2;
 }
 
 .video {
@@ -332,9 +351,9 @@ export default {
   position: absolute;
   width: 100%;
   height: 100%;
-  grid-template-columns: 300px 300px; /* 각 열의 넓이*/
-  grid-template-rows: 350px 350px; /* 각 행의 높이 */
-  grid-gap: 0; /* 비디오 간의 간격 제거 */
+  grid-template-columns: 300px 300px;
+  grid-template-rows: 350px 350px;
+  grid-gap: 0;
   z-index: 1;
 }
 
@@ -344,7 +363,7 @@ export default {
   object-fit: cover;
   margin: 0;
   padding: 0;
-  transform: scaleX(-1); /* 좌우반전 */
+  transform: scaleX(-1);
 }
 
 .modal {

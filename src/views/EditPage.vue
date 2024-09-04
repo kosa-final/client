@@ -1,6 +1,8 @@
 <template>
   <div class="main-container">
     <div class="largeTitle">DECORATING ROOM</div>
+    <div v-if="isMyTurn">{{ userNickname }}님의 차례입니다.</div>
+    <div v-else>{{ currentTurnNickname }}님의 차례입니다.</div>
     <div id="drawing-picture" class="drawing-container">
       <div class="canvas-container">
         <canvas ref="canvas"></canvas>
@@ -9,29 +11,17 @@
         <div class="tools">
           <h2>펜 색상</h2>
           <div class="color-tools">
-            <div
-              v-for="color in colors"
-              :key="color"
-              :style="{ backgroundColor: color }"
-              class="color-field"
-              @click="changeColor(color)"
-            ></div>
+            <div v-for="color in colors" :key="color" :style="{ backgroundColor: color }" class="color-field" @click="changeColor(color)"></div>
             <input type="color" v-model="drawColor" class="color-picker" />
             <input type="range" v-model="drawWidth" min="1" max="100" class="pen-range" />
           </div>
           <h2>스티커</h2>
           <div class="stickers">
-            <img
-              v-for="sticker in stickers"
-              :key="sticker" 
-              :src="sticker"
-              draggable="true"
-              @dragstart="dragStart"
-              class="sticker-image"
-            />
+            <img v-for="sticker in stickers" :key="sticker" :src="sticker" draggable="true" @dragstart="dragStart" class="sticker-image" />
           </div>
           <button @click="clearCanvas" class="btn-rounded">초기화</button>
           <button @click="undoLast" class="btn-rounded">되돌리기</button>
+          <button v-if="isMyTurn" class="btn-rounded" @click="passTurn">순서 넘기기</button>
         </div>
       </div>
     </div>
@@ -41,6 +31,7 @@
   </div>
 </template>
 
+
 <script>
 import axios from "axios";
 import sticker1 from "@/assets/Sticker/sticker1.png";
@@ -49,7 +40,7 @@ import sticker3 from "@/assets/Sticker/sticker3.png";
 
 export default {
   name: 'EditPage',
-  props: ['roomSession', 'userId'],
+  props: ['roomSession', 'userId', 'userNickname'],  // 사용자 닉네임 추가
   data() {
     return {
       canvas: null,
@@ -59,25 +50,73 @@ export default {
       isDrawing: false,
       restoreArray: [],
       index: -1,
-      colors: ["#212738", "#F97068", "#D1D646", "#57C4E5"],
+      colors: ["#FF0000", "#FFFF00", "#0000FF", "#FF00FF", "#FFFFFF", "#000000"],
       stickers: [sticker1, sticker2, sticker3],
       draggingSticker: null,
-      roomInfo: {}
+      roomInfo: {},
+      webSocket: null,
+      isMyTurn: false,  // 내가 그릴 차례인지 여부
+      currentTurnNickname: ""  // 현재 차례인 사용자의 닉네임
     };
   },
   mounted() {
     this.fetchRoomInfo();
+    this.initializeWebSocket();
   },
   methods: {
     async fetchRoomInfo() {
       try {
-        const response = await axios.get(`http://localhost:8080/photo/info`, {
+        const response = await axios.get('http://localhost:8080/photo/info', {
           params: { roomSession: this.roomSession }
         });
         this.roomInfo = response.data;
         this.initializeCanvas();
       } catch (error) {
         console.error('Error fetching room info:', error);
+      }
+    },
+    initializeWebSocket() {
+      this.webSocket = new WebSocket(`ws://localhost:8080/ws/turn?nickname=${this.userNickname}`);
+
+      this.webSocket.onmessage = (message) => {
+      const data = JSON.parse(message.data);
+      console.log('Received message:', data);
+
+      if (data.type === 'TURN') {
+        this.isMyTurn = (data.userId === this.userId);
+        if (this.isMyTurn) {
+          alert('Your turn to draw!');
+        }
+        this.currentTurnNickname = data.nickname;
+      }
+    };
+
+
+
+      this.webSocket.onopen = () => {
+        console.log('WebSocket 연결이 성공했습니다.');
+      };
+
+      this.webSocket.onclose = () => {
+        console.log('WebSocket 연결이 종료되었습니다.');
+      };
+
+      this.webSocket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+    },
+    passTurn() {
+        if (this.isMyTurn) {
+            this.webSocket.send(JSON.stringify({ type: 'PASS_TURN' }));
+        } else {
+            alert('It is not your turn!');
+        }
+    },
+    sendDrawingData(drawingData) {
+      if (this.isMyTurn) {
+        this.webSocket.send(JSON.stringify({ type: 'DRAW', data: drawingData }));
+      } else {
+        alert('It is not your turn!');
       }
     },
     initializeCanvas() {
@@ -107,7 +146,7 @@ export default {
       const imageBase64 = this.canvas.toDataURL('image/png');
       const photoData = {
         originPhoto: imageBase64,
-        roomId: this.roomInfo.roomId // roomInfo에서 roomId 가져옴
+        roomId: this.roomInfo.roomId 
       };
       
       try {
@@ -130,6 +169,10 @@ export default {
       this.drawColor = color;
     },
     startDrawing(event) {
+      if (!this.isMyTurn) {
+        alert('It is not your turn!');
+        return;
+      }
       this.isDrawing = true;
       this.context.beginPath();
       this.context.moveTo(event.clientX - this.canvas.offsetLeft, event.clientY - this.canvas.offsetTop);
@@ -162,24 +205,24 @@ export default {
       event.preventDefault();
     },
     clearCanvas() {
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    const image = new Image();
-    image.crossOrigin = "Anonymous";
-    image.src = this.roomInfo.originPhoto;
-    image.onload = () => {
-      this.context.drawImage(image, 0, 0, this.canvas.width, this.canvas.height);
-      this.restoreArray = [];
-      this.index = -1;
-     };
-   },
-   undoLast() {
-    if (this.index <= 0) {
-      this.clearCanvas();
-    } else {
-      this.index -= 1;
-      this.context.putImageData(this.restoreArray[this.index], 0, 0);
-    }
+      const image = new Image();
+      image.crossOrigin = "Anonymous";
+      image.src = this.roomInfo.originPhoto;
+      image.onload = () => {
+        this.context.drawImage(image, 0, 0, this.canvas.width, this.canvas.height);
+        this.restoreArray = [];
+        this.index = -1;
+      };
+    },
+    undoLast() {
+      if (this.index <= 0) {
+        this.clearCanvas();
+      } else {
+        this.index -= 1;
+        this.context.putImageData(this.restoreArray[this.index], 0, 0);
+      }
     },
     dragStart(event) {
       this.draggingSticker = event.target;
@@ -188,6 +231,11 @@ export default {
       event.preventDefault();
     },
     dropSticker(event) {
+      if (!this.isMyTurn) {
+        alert('It is not your turn!');
+        return;
+      }
+
       event.preventDefault();
       const x = event.clientX - this.canvas.offsetLeft;
       const y = event.clientY - this.canvas.offsetTop;
@@ -202,6 +250,7 @@ export default {
   }
 };
 </script>
+
 <style>
 .main-container {
   position: relative;
