@@ -1,20 +1,20 @@
 <template>
   <div>
     <CarouselComponent />
-    <PopularComponent />
+    <HotComponent />
     <FooterComponent />
   </div>
 </template>
 
 <script>
 import CarouselComponent from '@/components/main/CarouselComponent.vue';
-import PopularComponent from '@/components/main/PopularComponent.vue';
+import HotComponent from '@/components/main/HotComponent.vue';
 
 export default {
   name: 'HomePage',
   components: {
     CarouselComponent,
-    PopularComponent,
+    HotComponent,
   },
   mounted() {
     const storedToken = localStorage.getItem('accessToken');
