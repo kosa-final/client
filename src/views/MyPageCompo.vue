@@ -4,7 +4,7 @@
       <div v-if="photos.length > 0" class="photo-list">
         <div v-for="photo in photos" :key="photo.PHOTO_ID" class="photo-item">
           <div class="left-content">
-            <img :src="photo.ORIGIN_PHOTO" alt="photo" class="photo-image"> <!-- 임시로 ORIGIN_PHOTO 사용, 나중에 COMPLETE_PHOTO로 변경 -->
+            <img :src="photo.COMPLETE_PHOTO" alt="photo" class="photo-image"> 
             <div class="photo-info">
               <p class="room-name">{{ photo.ROOM_NAME }}</p>
               <p class="note">{{ photo.NOTE || '메모' }}</p>
