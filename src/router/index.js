@@ -13,6 +13,9 @@ import LoginCompo from '@/views/LoginCompo.vue';
 import UserProfile from '@/views/UserProfile.vue'; 
 import MyPageCompo from '@/views/MyPageCompo.vue';
 
+import CommunityCompo from '@/views/CommunityCompo.vue';
+import PictureDetail from '@/views/PictureDetail.vue'; 
+
 Vue.use(Router);
 
 export default new Router({
@@ -70,6 +73,22 @@ export default new Router({
       path: '/mypage', 
       name: 'MyPage',
       component: MyPageCompo
+    },
+    {
+      path: '/savepage/:roomSession',
+      name: 'SavePage',
+      component: SaveCompo
+    },
+    {
+      path: '/community',
+      name: 'Community',
+      component: CommunityCompo
+    },
+    {
+      path: '/photo/:photoId',
+      name: 'PictureDetail',
+      component: PictureDetail,
+      props: true,
     },
   ]
 });

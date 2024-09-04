@@ -3,9 +3,12 @@
     <nav>
       <a class="logo" href="/">4CutStudio</a>
       <div>
+        <router-link to="/community">
+          <button class="btn">COMMUNITY</button>
+        </router-link>
         <button v-if="isLoggedIn" @click="logoutUser" class="btn">LOGOUT</button>
         <router-link v-if="isLoggedIn" to="/mypage">
-          <button class="btn">My Page</button>
+          <button class="btn">MY PAGE</button>
         </router-link>
         <router-link v-else to="/login">
           <button class="btn">LOGIN</button>
@@ -65,9 +68,9 @@ nav {
   border: none;
   border-radius: 25px;
   text-align: center;
-  padding: 7px 20px;
+  padding: 7px 18px;
   color: white;
   font-size: 16px;
-  margin-left: 10px;
+  margin-left: 1px;
 }
 </style>
