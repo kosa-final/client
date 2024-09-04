@@ -111,7 +111,7 @@ export default {
       };
       
       try {
-        const response = await axios.post('http://localhost:8080/photo/save', photoData, {
+        const response = await axios.post(`http://localhost:8080/photo/complete?roomSession=${this.roomSession}`, photoData, {
           headers: { 'Content-Type': 'application/json' }
         });
         console.log('Image successfully uploaded to S3:', response.data);
@@ -122,8 +122,12 @@ export default {
     },
     navigateToSavePage(imageUrl) {
       this.$router.push({
-        path: `/savepage/${this.roomSession}`,
-        query: { imageUrl, userId: this.userId }
+          name: 'Save',
+          params: { 
+              roomSession: this.roomSession, 
+              imageUrl: encodeURIComponent(imageUrl), 
+              userId: this.userId 
+          }
       });
     },
     changeColor(color) {
