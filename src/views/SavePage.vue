@@ -1,47 +1,77 @@
 <template>
     <div class="save-page-container">
-        <h2 class="title">SAVE & SHARE</h2>
+        <p class="largeTitle">SAVE & SHARE</p>
         <div class="content-container">
             <div class="image-frame">
                 <img :src="imageUrl" alt="Saved Image" class="saved-image"/>
             </div>
             <div class="save-share-panel">
                 <div class="visibility-options">
-                    <span class="label">공개 여부</span>
+                    <span class="middleTitle">공개 여부</span>
                     <div class="buttons-container">
                         <button :class="{ active: isPublic }" @click="setVisibility(true)">공개</button>
                         <button :class="{ active: !isPublic }" @click="setVisibility(false)">비공개</button>
                     </div>
                 </div>
                 <div class="memo-section">
-                    <span class="label">메모 남기기</span>
+                    <span class="middleTitle">메모 남기기</span>
                     <textarea v-model="memo"></textarea>
                 </div>
-                <div class="sns-share">
+                <!-- <div class="sns-share">
                     <span class="label">SNS 공유</span>
-                    <!-- 아이콘 넣을 곳 -->
-                </div>
+                </div> -->
             </div>
         </div>
-        <button class="home-button">저장하기</button>
+        <div class="center">
+            <button class="btn-large" @click="saveCompletePhoto">저장하기</button>
+        </div>
     </div>
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
+    name: 'SavePage',
+    props: ['roomSession', 'userId'],
     data() {
         return {
-            imageUrl: decodeURIComponent(this.$route.query.imageUrl || ''), // URL 파라미터에서 이미지 URL을 가져옴
+            imageUrl: decodeURIComponent(this.$route.params.imageUrl || ''),
             isPublic: true,
             memo: ''
         };
+    },
+    mounted() {
+        console.log(this.$route.params.imageUrl);
     },
     methods: {
         setVisibility(isPublic) {
             this.isPublic = isPublic;
         },
-        shareToSNS(platform) {
-            alert(`Share to ${platform}`);
+        async saveCompletePhoto() {
+            const payload = {
+                isPublic: this.isPublic ? 'true' : 'false',
+                note: this.memo
+            };
+            try {
+                const response = await axios.post(
+                `http://localhost:8080/photo/final?roomSession=${this.roomSession}`, 
+                payload,
+                {
+                    headers: {
+                    'Content-Type': 'application/json'
+                    }
+                }
+                );
+                alert('Photo saved successfully!');
+                console.log('Response:', response.data);
+                this.$router.push({
+                    name: 'Home',
+                });
+            } catch (error) {
+                alert('Error saving photo.');
+                console.error('Save error:', error);
+            }
         }
     }
 };
@@ -55,13 +85,6 @@ export default {
     padding: 20px;
     font-family: Arial, sans-serif;
     gap: 20px;
-}
-
-.title {
-    color: #DB574D;
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
 }
 
 .content-container {
@@ -107,14 +130,6 @@ export default {
     margin-bottom: 20px;
 }
 
-.label {
-    margin-top: 30px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 8px;
-    display: inline-block;
-}
-
 .buttons-container {
     display: flex;
     gap: 30px; 
@@ -144,6 +159,7 @@ textarea {
     border-radius: 6px;
     resize: none;
     box-sizing: border-box;
+    background-color: transparent;
 }
 
 .sns-share {
@@ -153,13 +169,4 @@ textarea {
     margin-top: 10px;
 }
 
-.home-button {
-    padding: 10px 40px;
-    background-color: #DB574D;
-    color: white;
-    cursor: pointer;
-    border: none;
-    border-radius: 5px;
-    margin-top: 20px;
-}
 </style>
