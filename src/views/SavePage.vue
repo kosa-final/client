@@ -1,20 +1,20 @@
 <template>
-    <div class="save-page-container">
+    <div class="main-container">
         <p class="largeTitle">SAVE & SHARE</p>
-        <div class="content-container">
-            <div class="image-frame">
+        <div class="container">
+            <div class="image-container">
                 <img :src="imageUrl" alt="Saved Image" class="saved-image"/>
             </div>
-            <div class="save-share-panel">
+            <div class="right-panel">
                 <div class="visibility-options">
-                    <span class="middleTitle">공개 여부</span>
+                    <p class="middleTitle">공개 여부</p>
                     <div class="buttons-container">
                         <button :class="{ active: isPublic }" @click="setVisibility(true)">공개</button>
                         <button :class="{ active: !isPublic }" @click="setVisibility(false)">비공개</button>
                     </div>
                 </div>
                 <div class="memo-section">
-                    <span class="middleTitle">메모 남기기</span>
+                    <p class="middleTitle">메모 남기기</p>
                     <textarea v-model="memo"></textarea>
                 </div>
                 <!-- <div class="sns-share">
@@ -78,56 +78,47 @@ export default {
 </script>
 
 <style>
-.save-page-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    font-family: Arial, sans-serif;
-    gap: 20px;
+.main-container {
+  position: relative;
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
 }
 
-.content-container {
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: 100px; /* 이미지와 공유 패널 간의 간격 */
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-grow: 1;
 }
 
-.image-frame {
-    width: 500px;
-    height: 600px;
-    background-color: #f0f0f0;
-    border-radius: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #333;
-    font-size: 24px;
-    font-weight: bold;
-    text-align: center;
-    /* 상단에 다른 요소와 일직선 맞추기 위해 flex-start로 설정 */
-    align-self: flex-start;
+.image-container {
+  margin-right: 180px;
+  margin-top: 30px;
 }
 
 .saved-image {
-    max-width: 100%;
-    max-height: 100%;
+  position: relative;
+  width: 600px;
+  height: 800px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-.save-share-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    width: 100%;
-    max-width: 300px;
+.right-panel {
+  width: 100%;
+  max-width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .visibility-options,
 .memo-section,
 .sns-share {
-    width: 100%;
-    margin-bottom: 20px;
+    width: 500px;
 }
 
 .buttons-container {
@@ -141,7 +132,7 @@ export default {
     background-color: transparent;
     color: #DB574D;
     cursor: pointer;
-    border-radius: 5px;
+    border-radius: 15px;
     flex: 1;
     text-align: center;
 }
@@ -156,17 +147,9 @@ textarea {
     height: 150px; 
     padding: 10px;
     border: 1px solid #DB574D;
-    border-radius: 6px;
+    border-radius: 15px;
     resize: none;
     box-sizing: border-box;
     background-color: transparent;
 }
-
-.sns-share {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 10px;
-}
-
 </style>
