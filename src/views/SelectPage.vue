@@ -31,8 +31,8 @@ export default {
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 120px;
-  font-size: 50px;
+  height: 150px;
+  font-size: 60px;
   color: black;
   text-align: center;
 }

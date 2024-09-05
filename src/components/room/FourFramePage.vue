@@ -6,7 +6,6 @@
         <div class="photo-origin" ref="photoOrigin" :style="{ backgroundImage: hasCapturedPhoto ? 'url(' + photoImageUrl + ')' : '' }">
           <!-- 프레임 이미지 -->
           <img :src="frameImageUrl" alt="Frame" class="frame-image" />
-
           <!-- 비디오 (퍼블리셔 + 구독자들) -->
           <div class="video" v-if="!hasCapturedPhoto">
             <user-video
@@ -27,25 +26,23 @@
       <div class="right-panel">
         <div id="session-header">
           <p class="middleTitle">방 이름</p>
-          <p>{{ roomInfo.roomName }}</p>
+          <p class="output">{{ roomInfo.roomName }} ({{ userRole }})</p>
           <p class="middleTitle">초대코드</p>
-          <p>{{ roomSession }}</p>
-          <p class="middleTitle">회원유형</p>
-          <p>{{ userRole }}</p>
+          <p class="output">{{ roomSession }}</p>
           <p class="middleTitle">안내사항</p>
           <p>1. 입장 순서대로 프레임이 선정됩니다</p>
           <p>2. 인원이 다 차면 자동으로 촬영 버튼이 활성화됩니다</p>
           <p>3. 인원이 다 차고 30초 이내에 사진을 찍어야 합니다</p>
           <p>4. 30초 이내에 사진을 못 찍을 경우 자동으로 사진이 찍힙니다</p>
           <p>5. 사진 촬영은 방장만 가능합니다</p>
-          <button class="btn-rounded" @click="capturePhotoOrigin" :disabled="!isCaptureButtonEnabled || hasCapturedPhoto">
-            사진촬영
-          </button>
         </div>
+        <button class="btn-rounded" @click="capturePhotoOrigin" :disabled="!isCaptureButtonEnabled || hasCapturedPhoto">
+            사진촬영
+        </button>
       </div>
     </div>
     <div class="center">
-      <button class="btn-large" @click="showLeaveModal">사진 꾸미러가기</button>
+      <button class="btn-large" @click="showLeaveModal">사진 꾸미기</button>
     </div>
 
     <!-- 방 나가기 모달 -->
@@ -301,7 +298,7 @@ export default {
 .main-container {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: auto;
   display: flex;
   flex-direction: column;
 }
@@ -311,11 +308,11 @@ export default {
   justify-content: center;
   align-items: flex-start;
   flex-grow: 1;
-  margin-top: 20px;
 }
 
 .video-container {
   margin-right: 180px;
+  margin-top: 30px;
 }
 
 .controls-container {

@@ -178,7 +178,7 @@ export default {
           alert('Error creating room: ' + error);
         }
       } else {
-        alert("Please enter a room name.");
+        alert("방 이름을 입력하세요");
       }
     }
   }
@@ -186,10 +186,6 @@ export default {
 </script>
 
 <style scoped>
-div {
-  padding: 10px;
-}
-
 .frame-options {
   display: flex;
   justify-content: center;
@@ -217,5 +213,4 @@ div {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
   transition: transform 0.2s;
 }
-
 </style>
