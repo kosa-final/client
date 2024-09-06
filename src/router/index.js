@@ -85,11 +85,12 @@ export default new Router({
       name: 'Community',
       component: CommunityCompo
     },
+    
     {
       path: '/photo/:photoId',
       name: 'PictureDetail',
       component: PictureDetail,
       props: true,
-    },
+    }
   ]
 });
