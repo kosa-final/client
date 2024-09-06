@@ -161,7 +161,7 @@ export default {
         };
         
         try {
-          await axios.post('http://localhost:8080/room/create', payload);
+          await axios.post(`${process.env.VUE_APP_BACKEND_URL}/room/create`, payload);
 
           this.$router.push({
             name: 'Room',

@@ -102,7 +102,7 @@ export default {
         return;
       }
 
-      axios.get('http://localhost:8080/api/photolist', {
+      axios.get(`${process.env.VUE_APP_BACKEND_URL}/api/photolist`, {
         params: {
           userId: userId // userId를 쿼리 파라미터로 추가
         },
@@ -140,7 +140,7 @@ export default {
       this.$router.push({ name: 'PictureDetail', params: { photoId } }); // 사진의 상세 페이지로 이동
     },
     confirmDelete() {
-      axios.post('http://localhost:8080/api/kakao/deactivate', {}, {
+      axios.post(`${process.env.VUE_APP_BACKEND_URL}/api/kakao/deactivate`, {}, {
         withCredentials: true
       })
       .then(() => {

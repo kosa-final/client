@@ -49,7 +49,7 @@
     },
     methods: {
       fetchPhotoDetail(photoId) {
-        axios.get(`http://localhost:8080/api/community/${photoId}`)
+        axios.get(`${process.env.VUE_APP_BACKEND_URL}/api/community/${photoId}`)
           .then(response => {
             console.log(response.data);  // 데이터를 확인합니다.
             this.photoDetail = response.data;
@@ -65,7 +65,7 @@
           return;
         }
   
-        axios.post(`http://localhost:8080/api/like/${this.$route.params.photoId}`, { userId })
+        axios.post(`${process.env.VUE_APP_BACKEND_URL}/api/like/${this.$route.params.photoId}`, { userId })
           .then(() => {
             this.isLiked = !this.isLiked;
             this.likesCount += this.isLiked ? 1 : -1;

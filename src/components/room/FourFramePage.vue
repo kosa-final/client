@@ -24,7 +24,7 @@
         </div>
       </div>
       <div class="right-panel">
-        <div id="session-header">
+        <div>
           <p class="middleTitle">방 이름</p>
           <p class="output">{{ roomInfo.roomName }} ({{ userRole }})</p>
           <p class="middleTitle">초대코드</p>
@@ -258,7 +258,7 @@ export default {
         this.isCaptureButtonEnabled = false;
 
         const response = await axios.post(
-          "http://localhost:8080/photo/save",
+          `${process.env.VUE_APP_BACKEND_URL}/photo/save`,
           { 
             originPhoto: imageData,
             roomId: this.roomInfo.roomId
@@ -315,11 +315,12 @@ export default {
   margin-top: 30px;
 }
 
-.controls-container {
-  width: 300px; 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.right-panel {
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .photo-origin {
@@ -386,4 +387,5 @@ export default {
 .modal-btn {
   margin: 10px;
 }
+
 </style>

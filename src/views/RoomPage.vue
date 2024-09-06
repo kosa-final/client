@@ -48,7 +48,7 @@ export default {
     async loadRoomInfo() {
       if (!this.roomInfo) {
         try {
-          const response = await axios.get(`http://localhost:8080/room/info`, {
+          const response = await axios.get(`${process.env.VUE_APP_BACKEND_URL}/room/info`, {
             params: {
               roomSession: this.roomSession,
             },

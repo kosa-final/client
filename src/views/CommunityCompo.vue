@@ -66,7 +66,7 @@
     },
     methods: {
       fetchCommunityPhotos() {
-        axios.get('http://localhost:8080/api/community')
+        axios.get(`${process.env.VUE_APP_BACKEND_URL}/api/community`)
           .then(response => {
             this.photos = response.data;
             this.totalPhotos = this.photos.length;
