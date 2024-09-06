@@ -6,7 +6,7 @@
         <span @click="sortByPopularity" :class="{ active: sortType === 'popularity' }">인기순</span>
       </p>
       <div class="photo-grid">
-        <div v-for="photo in sortedPhotos" :key="photo.photo_id" class="photo-item" @click="goToDetail(photo.photo_id)">
+        <div v-for="photo in sortedPhotos" :key="photo.PHOTO_ID" class="photo-item" @click="goToDetail(photo.PHOTO_ID)">
           <img :src="photo.COMPLETE_PHOTO" alt="Community Photo" class="photo-image" />
           <p>{{ photo.room_name }}</p>
         </div>
@@ -66,7 +66,7 @@
     },
     methods: {
       fetchCommunityPhotos() {
-        axios.get('http://localhost:8080/api/community')
+        axios.get(`${process.env.VUE_APP_BACKEND_URL}/api/community`)
           .then(response => {
             this.photos = response.data;
             this.totalPhotos = this.photos.length;
@@ -107,14 +107,14 @@
     color: #DB574D;
     text-align: center;
     font-size: 35px;
-    margin-bottom: 20px;
+    margin-bottom: 50px;
   }
   
   .sort-options {
     text-align: left;
     font-size: 18px;
     color: #666;
-    margin-bottom: 20px;
+    margin-bottom: 50px;
   }
   
   .sort-options span {

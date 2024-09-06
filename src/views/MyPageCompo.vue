@@ -1,13 +1,13 @@
 <template>
     <div class="mypage-container">
       <h2>My Page</h2>
-      <div v-if="photos.length > 0" class="photo-list">
-        <div v-for="photo in photos" :key="photo.PHOTO_ID" class="photo-item">
+      <div v-if="paginatedPhotos.length > 0" class="photo-list">
+        <div v-for="photo in paginatedPhotos" :key="photo.PHOTO_ID" class="photo-item" @click="goToDetail(photo.PHOTO_ID)">
           <div class="left-content">
             <img :src="photo.COMPLETE_PHOTO" alt="photo" class="photo-image"> 
             <div class="photo-info">
               <p class="room-name">{{ photo.ROOM_NAME }}</p>
-              <p class="note">{{ photo.NOTE || '메모' }}</p>
+              <p class="note">{{ photo.NOTE }}</p>
             </div>
           </div>
           <div class="right-content">
@@ -19,6 +19,21 @@
       <div v-else>
         <p>사진이 없습니다.</p>
       </div>
+
+      <!-- 페이지네이션 -->
+      <div class="pagination">
+        <span @click="changePage(currentPage - 1)" :class="{ disabled: currentPage === 1 }" class="arrow">‹</span>
+        <button
+          v-for="page in paginationRange"
+          :key="page"
+          @click="changePage(page)"
+          :disabled="page === currentPage"
+        >
+          {{ page }}
+        </button>
+        <span @click="changePage(currentPage + 1)" :class="{ disabled: currentPage === totalPages }" class="arrow">›</span>
+      </div>
+
       <button @click="showConfirmModal = true" class="delete-button">회원 탈퇴</button>
       <div v-if="showConfirmModal" class="modal-overlay">
         <div class="modal">
@@ -46,6 +61,8 @@ export default {
       showConfirmModal: false,
       showCompletionModal: false,
       photos: [], // 사진 목록을 저장할 배열
+      currentPage: 1, // 현재 페이지
+      photosPerPage: 5, // 페이지당 사진 수
     };
   },
   computed: {
@@ -54,6 +71,25 @@ export default {
     },
     accessToken() {
       return this.$store.state.accessToken;
+    },
+    totalPages() {
+      return Math.ceil(this.photos.length / this.photosPerPage);
+    },
+    paginatedPhotos() {
+      const start = (this.currentPage - 1) * this.photosPerPage;
+      const end = start + this.photosPerPage;
+      return this.photos.slice(start, end); // 현재 페이지에 맞는 사진들을 반환
+    },
+    paginationRange() {
+      const rangeSize = 5;
+      let start = Math.max(this.currentPage - Math.floor(rangeSize / 2), 1);
+      let end = Math.min(start + rangeSize - 1, this.totalPages);
+  
+      if (end - start < rangeSize - 1) {
+        start = Math.max(end - rangeSize + 1, 1);
+      }
+  
+      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     }
   },
   methods: {
@@ -66,7 +102,7 @@ export default {
         return;
       }
 
-      axios.get('http://localhost:8080/api/photolist', {
+      axios.get(`${process.env.VUE_APP_BACKEND_URL}/api/photolist`, {
         params: {
           userId: userId // userId를 쿼리 파라미터로 추가
         },
@@ -95,8 +131,16 @@ export default {
 
       return `${year}-${month}-${day}`; // YYYY-MM-DD 형식으로 반환
     },
+    changePage(page) {
+      if (page > 0 && page <= this.totalPages) {
+        this.currentPage = page;
+      }
+    },
+    goToDetail(photoId) {
+      this.$router.push({ name: 'PictureDetail', params: { photoId } }); // 사진의 상세 페이지로 이동
+    },
     confirmDelete() {
-      axios.post('http://localhost:8080/api/kakao/deactivate', {}, {
+      axios.post(`${process.env.VUE_APP_BACKEND_URL}/api/kakao/deactivate`, {}, {
         withCredentials: true
       })
       .then(() => {
@@ -150,6 +194,7 @@ h2 {
   align-items: center;
   padding: 10px 0;
   border-bottom: 1px solid #ddd;
+  cursor: pointer; /* 클릭 가능하도록 커서를 추가 */
 }
 
 .left-content {
@@ -158,8 +203,8 @@ h2 {
 }
 
 .photo-image {
-  width: 90px;
-  height: 120px;
+  width: 100px;
+  height: 125px;
   margin-right: 15px;
   object-fit: cover;
 }
@@ -295,5 +340,40 @@ h2 {
 .cancel-button:hover {
   color: white;
   background-color: #DB574D;
+}
+
+/* 페이지네이션 스타일 */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  background-color: #999;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 0 5px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.pagination button:disabled {
+  background-color: #DB574D;
+  cursor: default;
+}
+
+.arrow {
+  font-size: 24px; /* 화살표 크기를 키움 */
+  margin: 0 15px; /* 버튼과의 간격 설정 */
+  color: #999; /* 기본 상태 화살표 색상 */
+  cursor: pointer;
+}
+
+.arrow.disabled {
+  color: #ccc; /* 비활성화된 상태에서는 회색으로 표시 */
+  cursor: default;
 }
 </style>

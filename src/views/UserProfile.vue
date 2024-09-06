@@ -21,11 +21,11 @@
           return;
         }
   
-        axios.get('http://localhost:8080/api/userinfo', {
-          headers: {
+        axios.get(`${process.env.VUE_APP_BACKEND_URL}/api/userinfo`, {
+        headers: {
             Authorization: `Bearer ${this.accessToken}`,
-          },
-          withCredentials: true,
+        },
+        withCredentials: true,
         })
         .then(response => {
           // Vuex 상태 업데이트

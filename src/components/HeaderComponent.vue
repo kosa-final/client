@@ -1,11 +1,14 @@
 <template>
   <header class="header">
     <nav>
-      <a class="logo" href="/">4CutStudio</a>
-      <div>
-        <router-link to="/community">
-          <button class="btn">COMMUNITY</button>
-        </router-link>
+      <div class="left-section">
+        <a class="logo" href="/">4CutStudio</a>
+        <div class="menu">
+          <router-link to="/select">사진촬영</router-link>
+          <router-link to="/community">커뮤니티</router-link>
+        </div>
+      </div>
+      <div class="right-section">
         <button v-if="isLoggedIn" @click="logoutUser" class="btn">LOGOUT</button>
         <router-link v-if="isLoggedIn" to="/mypage">
           <button class="btn">MY PAGE</button>
@@ -57,20 +60,33 @@ nav {
   margin: 20px;
 }
 
-.logo {
-  font-size: 24px;
+.left-section {
+  display: flex;
+  align-items: center;
+}
+
+.menu {
+  margin-left: 20px;
+}
+
+.menu a {
+  margin-right: 15px;
   text-decoration: none;
   color: #DB574D;
 }
 
+.logo {
+  font-size: 24px;
+  text-decoration: none;
+  color: black;
+}
+
+.right-section {
+  display: flex;
+  align-items: center;
+}
+
 .btn {
-  background-color: #DB574D;
-  border: none;
-  border-radius: 25px;
-  text-align: center;
-  padding: 7px 18px;
-  color: white;
-  font-size: 16px;
-  margin-left: 1px;
+	margin: 0 5px;
 }
 </style>
