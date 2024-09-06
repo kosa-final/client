@@ -258,7 +258,7 @@ export default {
         this.isCaptureButtonEnabled = false;
 
         const response = await axios.post(
-          "http://localhost:8080/photo/save",
+          `${process.env.VUE_APP_BACKEND_URL}/photo/save`,
           { 
             originPhoto: imageData,
             roomId: this.roomInfo.roomId

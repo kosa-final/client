@@ -17,7 +17,7 @@ export default {
   methods: {
   loginWithKakao() {
     const clientId = 'fa48f38c035cc445070338897bcbb504';
-    const redirectUri = 'http://localhost:8080/api/kakao/callback';
+    const redirectUri =  `${process.env.VUE_APP_BACKEND_URL}/api/kakao/callback`;
     const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&prompt=login`;
 
     console.log("Kakao 로그인 페이지로 이동:", kakaoAuthUrl);

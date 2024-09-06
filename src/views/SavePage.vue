@@ -55,7 +55,7 @@ export default {
             };
             try {
                 const response = await axios.post(
-                `http://localhost:8080/photo/final?roomSession=${this.roomSession}`, 
+                `${process.env.VUE_APP_BACKEND_URL}/photo/final?roomSession=${this.roomSession}`, 
                 payload,
                 {
                     headers: {

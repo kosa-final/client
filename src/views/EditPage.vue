@@ -66,7 +66,7 @@ export default {
   methods: {
     async fetchRoomInfo() {
       try {
-        const response = await axios.get('http://localhost:8080/photo/info', {
+        const response = await axios.get(`${process.env.VUE_APP_BACKEND_URL}/photo/info`, {
           params: { roomSession: this.roomSession }
         });
         this.roomInfo = response.data;
@@ -76,7 +76,7 @@ export default {
       }
     },
     initializeWebSocket() {
-      this.webSocket = new WebSocket(`ws://localhost:8080/ws/turn?nickname=${this.userNickname}`);
+      this.webSocket = new WebSocket(`ws://${process.env.VUE_APP_BACKEND_URL}/ws/turn?nickname=${this.userNickname}`);
 
       this.webSocket.onmessage = (message) => {
       const data = JSON.parse(message.data);
@@ -150,7 +150,7 @@ export default {
       };
       
       try {
-        const response = await axios.post(`http://localhost:8080/photo/complete?roomSession=${this.roomSession}`, photoData, {
+        const response = await axios.post(`${process.env.VUE_APP_BACKEND_URL}/photo/complete?roomSession=${this.roomSession}`, photoData, {
           headers: { 'Content-Type': 'application/json' }
         });
         console.log('Image successfully uploaded to S3:', response.data);
