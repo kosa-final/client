@@ -1,29 +1,32 @@
 <template>
-    <div class="save-page-container">
-      <h2 class="title">SAVE & SHARE</h2>
+    <div class="main-container">
+      <p class="largeTitle">SAVE & SHARE</p>
       <div class="content-container">
         <div class="image-frame">
           <img :src="imageUrl" alt="Saved Image" class="saved-image" />
         </div>
-        <div class="save-share-panel">
+        <div class="right-panel">
           <div class="visibility-options">
-            <span class="label">공개 여부</span>
+            <p class="middleTitle">공개 여부</p>
             <div class="buttons-container">
               <button :disabled="!isHost" @click="setVisibility(true)" :class="{active: isPublic}">공개</button>
               <button :disabled="!isHost" @click="setVisibility(false)" :class="{active: !isPublic}">비공개</button>
             </div>
           </div>
           <div class="memo-section">
-            <span class="label">메모 남기기</span>
+            <p class="middleTitle">메모 남기기</p>
             <textarea v-model="memo" :disabled="!isHost"></textarea>
           </div>
-          <div class="sns-share">
-            <span class="label">SNS 공유 {{ isHost }}</span>
-            <!-- SNS 공유 아이콘 추가 -->
-          </div>
+          <!-- <div class="sns-share">
+            <p class="middleTitle">SNS 공유 {{ isHost }}</span>
+            SNS 공유 아이콘 추가
+          </div> -->
         </div>
       </div>
-      <button v-if="isHost" @click="saveCompletePhoto" class="btn-large">저장하기</button>
+      <!-- <button v-if="isHost" @click="saveCompletePhoto" class="btn-large">저장하기</button> -->
+      <div class="center">
+        <button @click="saveCompletePhoto" class="btn-large">저장하기</button>
+      </div>
     </div>
   </template>
   
@@ -144,56 +147,42 @@
 
 
 <style>
-.save-page-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    font-family: Arial, sans-serif;
-    gap: 20px;
-}
-
-.title {
-    color: #DB574D;
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
+.main-container {
+  position: relative;
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .content-container {
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: 100px; /* 이미지와 공유 패널 간의 간격 */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-grow: 1;
+  margin-top: 20px;
 }
 
 .image-frame {
-    width: 500px;
-    height: 600px;
-    background-color: #f0f0f0;
-    border-radius: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #333;
-    font-size: 24px;
-    font-weight: bold;
-    text-align: center;
-    /* 상단에 다른 요소와 일직선 맞추기 위해 flex-start로 설정 */
-    align-self: flex-start;
+  margin-right: 180px;
+  margin-top: 30px;
 }
 
 .saved-image {
-    max-width: 100%;
-    max-height: 100%;
+  position: relative;
+  width: 600px;
+  height: 800px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-.save-share-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+.right-panel {
     width: 100%;
     max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .visibility-options,
@@ -201,14 +190,6 @@
 .sns-share {
     width: 100%;
     margin-bottom: 20px;
-}
-
-.label {
-    margin-top: 30px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 8px;
-    display: inline-block;
 }
 
 .buttons-container {
@@ -249,14 +230,5 @@ textarea {
     margin-top: 10px;
 }
 
-.home-button {
-    padding: 10px 40px;
-    background-color: #DB574D;
-    color: white;
-    cursor: pointer;
-    border: none;
-    border-radius: 5px;
-    margin-top: 20px;
-}
 </style>
   
