@@ -37,7 +37,7 @@
             </ul>
   
             <textarea v-model="newComment" placeholder="댓글을 입력하세요"></textarea>
-            <button @click="addComment">댓글 등록</button>
+            <button @click="addComment">등록</button>
           </div>
         </div>
       </div>
@@ -307,20 +307,30 @@
     margin-top: 20px;
   }
   
-  .comment-section textarea {
-    width: 300px;
-    height: 80px;
-    margin-bottom: 10px;
-    padding: 10px;
-  }
-  
   .comment-section button {
-    background-color: #db574d;
-    color: white;
+    background-color: #db574d; /* 등록 버튼 배경색 */
+    color: white; /* 등록 버튼 글자색 */
     border: none;
-    padding: 10px;
+    padding: 10px 10px; /* 패딩 조정 (왼쪽/오른쪽 30px, 위/아래 10px) */
+    font-size: 16px; /* 폰트 크기 조정 */
     cursor: pointer;
-  }
+    margin-left: -10px; /* 댓글 입력창과의 간격 */
+    border-radius: 5px; /* 모서리 둥글게 */
+    width: 60px;
+    height: 40px;
+
+}
+
+.comment-section textarea {
+    width: 400px; /* 등록 버튼 옆에 입력창이 맞춰지도록 너비 조정 */
+    height: 40px; /* 높이 조정 */
+    padding: 10px; /* 내부 패딩 */
+    margin-right: -10px; /* 등록 버튼과의 간격 */
+    font-size: 16px; /* 폰트 크기 */
+    box-sizing: border-box; /* 패딩 포함한 너비 계산 */
+    margin-top: 20px;
+}
+
   
   .comment-list {
     list-style: none;
@@ -362,12 +372,13 @@
 }
 
 .dropdown-toggle {
-  background: none;
-  border: none;
+  background-color: transparent !important; /* 배경 투명 */
+  border: none !important;
   font-size: 14px;
   cursor: pointer;
   margin-left: 10px;
-  background-color: #EEEDEE;
+  color: #666 !important; /* 삼각형 색상 설정 */
 }
+
 </style>
   
