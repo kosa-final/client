@@ -54,7 +54,7 @@ export default new Vuex.Store({
       if (!state.accessToken) {
         return;
       }
-      axios.get(`${process.VUE_APP_BACKEND_URL}/api/userinfo`, {
+      axios.get('http://localhost:8080/api/userinfo', {
         headers: {
           Authorization: `Bearer ${state.accessToken}`
         }
@@ -71,7 +71,7 @@ export default new Vuex.Store({
       if (!userId) {
         return;
       }
-      axios.get(`${process.VUE_APP_BACKEND_URL}/api/like/user/${userId}/liked-photos`)
+      axios.get(`http://localhost:8080/api/like/user/${userId}/liked-photos`)
         .then(response => {
           const likedPhotos = response.data.reduce((acc, photoId) => {
             acc[photoId] = true;
@@ -93,7 +93,7 @@ export default new Vuex.Store({
       }
 
       // 서버에 좋아요/취소 요청
-      axios.post(`${process.VUE_APP_BACKEND_URL}/api/like/${photoId}?userId=${userId}`)
+      axios.post(`http://localhost:8080/api/like/${photoId}?userId=${userId}`)
         .then(() => {
           // 서버 요청 성공 후 Vuex 상태 업데이트
           commit('TOGGLE_LIKE', { photoId, isLiked });
