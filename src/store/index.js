@@ -94,6 +94,7 @@ export default new Vuex.Store({
 
       // 서버에 좋아요/취소 요청
       axios.post(`${process.env.VUE_APP_BACKEND_URL}/api/like/${photoId}?userId=${userId}`)
+
         .then(() => {
           // 서버 요청 성공 후 Vuex 상태 업데이트
           commit('TOGGLE_LIKE', { photoId, isLiked });
