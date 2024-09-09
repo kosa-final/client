@@ -50,8 +50,8 @@
       <div class="modal-content">
         <p>방을 나가면 다시 못 돌아옵니다</p>
         <p>방을 나가시겠습니까?</p>
-        <button @click="leaveSession" class="modal-btn">네</button>
-        <button @click="hideLeaveModal" class="modal-btn">아니요</button>
+        <button @click="leaveSession" class="btn">네</button>
+        <button @click="hideLeaveModal" class="btn">아니요</button>
       </div>
     </div>
   </div>
@@ -315,14 +315,6 @@ export default {
   margin-top: 30px;
 }
 
-.right-panel {
-    width: 100%;
-    max-width: 300px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
 .photo-origin {
   position: relative;
   width: 600px;
@@ -364,6 +356,14 @@ export default {
   transform: scaleX(-1);
 }
 
+.right-panel {
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .modal {
   position: fixed;
   top: 0;
@@ -380,12 +380,11 @@ export default {
 .modal-content {
   background-color: white;
   padding: 20px;
-  border-radius: 5px;
+  border-radius: 15px;
   text-align: center;
 }
 
-.modal-btn {
-  margin: 10px;
+.btn {
+  margin-right: 10px;
 }
-
 </style>

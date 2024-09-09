@@ -1,6 +1,6 @@
 <template>
   <div class="login-container">
-    <div class="login-text">SNS 간편 로그인</div>
+    <div class="largeTitle">LETS'S GET STARTED!</div>
     <button v-if="!accessToken" @click="loginWithKakao" class="kakao-login-button"></button>
   </div>
 </template>
@@ -72,14 +72,6 @@ export default {
   justify-content: center;
   align-items: center;
   height: 100vh;
-}
-
-.login-text {
-  margin-bottom: 20px;
-  margin-right:300px;
-  font-size: 24px;
-  font-weight: bold;
-  color:808080;
 }
 
 .kakao-login-button {

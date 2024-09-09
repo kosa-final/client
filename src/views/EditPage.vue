@@ -1,21 +1,23 @@
 <template>
   <div class="main-container">
     <div class="largeTitle">DECORATING ROOM</div>
-    <div v-if="isMyTurn">{{ localUserNickname }}님의 차례입니다.</div>
-    <div v-else>{{ currentTurnNickname }}님의 차례입니다.</div>
     <div id="drawing-picture" class="drawing-container">
       <div class="canvas-container">
         <canvas ref="canvas"></canvas>
       </div>
       <div class="right-panel">
-        <div class="tools">
-          <h2>펜 색상</h2>
+          <p class="middleTitle">꾸미기 순서</p>
+            <div v-if="isMyTurn" class="output">{{ localUserNickname }}님의 차례입니다</div>
+            <div v-else class="output">{{ currentTurnNickname }}님의 차례입니다</div>
+          <p class="middleTitle">펜 색상</p>
           <div class="color-tools">
             <div v-for="color in colors" :key="color" :style="{ backgroundColor: color }" class="color-field" @click="changeColor(color)"></div>
+          </div>
+          <div class="color-tools">
             <input type="color" v-model="drawColor" class="color-picker" />
             <input type="range" v-model="drawWidth" min="1" max="100" class="pen-range" />
           </div>
-          <h2>스티커</h2>
+          <p class="middleTitle">스티커</p>
           <div class="stickers">
             <img v-for="sticker in stickers" :key="sticker" :src="sticker" draggable="true" @dragstart="dragStart" class="sticker-image" />
           </div>
@@ -27,7 +29,6 @@
 
           <!-- 마지막 차례일 때 사진 전송하기 버튼 표시 -->
           <button v-if="isMyTurn && isLastTurn" class="btn-large" @click="saveCanvas">사진 전송하기</button>
-        </div>
       </div>
     </div>
   </div>
@@ -35,9 +36,16 @@
 
 <script>
 import axios from "axios";
-import sticker1 from "@/assets/Sticker/sticker1.png";
-import sticker2 from "@/assets/Sticker/sticker2.png";
-import sticker3 from "@/assets/Sticker/sticker3.png";
+import alien from "@/assets/sticker/alien.png";
+import butterfly from "@/assets/sticker/butterfly.png";
+import fireworks from "@/assets/sticker/fireworks.png";
+import havefun from "@/assets/sticker/havefun.png";
+import heart from "@/assets/sticker/heart.png";
+import rainbow from "@/assets/sticker/rainbow.png";
+import ribbon from "@/assets/sticker/ribbon.png";
+import smile from "@/assets/sticker/smile.png";
+import star from "@/assets/sticker/star.png";
+import sunglass from "@/assets/sticker/sunglass.png";
 
 export default {
   name: 'EditPage',
@@ -57,7 +65,7 @@ export default {
       lastX: 0,
       lastY: 0,
       colors: ["#FF0000", "#FFFF00", "#0000FF", "#FF00FF", "#FFFFFF", "#000000"],
-      stickers: [sticker1, sticker2, sticker3],
+      stickers: [alien, butterfly, havefun, smile, heart, fireworks, rainbow, ribbon,  star, sunglass],
       draggingSticker: null,
       roomInfo: {},
       webSocket: null,
@@ -401,7 +409,7 @@ dropSticker(event) {
 .main-container {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: auto;
   display: flex;
   flex-direction: column;
 }
@@ -411,28 +419,33 @@ dropSticker(event) {
   justify-content: center;
   align-items: flex-start;
   flex-grow: 1;
-  margin-top: 20px;
 }
 
 .canvas-container {
   margin-right: 180px;
+  margin-top: 30px;
+}
+
+canvas {
+  position: relative;
+  width: 600px;
+  height: 800px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .right-panel {
-  width: 300px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.tools {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .color-tools {
   display: flex;
+  width: 100%;
   gap: 10px;
   align-items: center;
 }
@@ -465,7 +478,4 @@ dropSticker(event) {
   cursor: move;
 }
 
-h2 {
-  margin-bottom: -7px;
-}
 </style>
