@@ -41,7 +41,7 @@
         });
       },
       logout() {
-        axios.post('http://localhost:8080/api/logout', new URLSearchParams({ accessToken: this.accessToken }))
+        axios.post(`${process.env.VUE_APP_BACKEND_URL}/api/logout`, new URLSearchParams({ accessToken: this.accessToken }))
         .then(() => {
           this.$store.commit('logout'); // Vuex의 logout mutation 호출
           this.$router.push('/'); // 로그아웃 후 메인페이지로 이동
