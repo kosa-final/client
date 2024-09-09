@@ -15,7 +15,7 @@ export default {
   display: flex;
   justify-content: center; 
   align-items: center;
-  height: 70px;
+  height: 100px;
   font-size: 12px;
 }
 </style>

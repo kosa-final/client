@@ -34,7 +34,7 @@ export default {
       }
 
       try {
-        const response = await axios.post('http://localhost:8080/room/enter', null, {
+        const response = await axios.post(`${process.env.VUE_APP_BACKEND_URL}/room/enter`, null, {
           params: {
             userId: this.userId,
             roomSession: this.roomSession
@@ -67,7 +67,7 @@ export default {
     },
     async fetchRoomInfo(roomSession) {
       try {
-        const response = await axios.get(`http://localhost:8080/room/info`, {
+        const response = await axios.get(`${process.env.VUE_APP_BACKEND_URL}/room/info`, {
           params: {
             roomSession: roomSession
           }
@@ -89,7 +89,4 @@ export default {
 </script>
 
 <style scoped>
-div {
-  padding: 10px;
-}
 </style>

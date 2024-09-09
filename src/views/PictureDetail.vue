@@ -68,9 +68,10 @@
     methods: {
       // 사진 상세 정보 및 좋아요 상태 불러오기
       fetchPhotoDetail(photoId) {
-        axios
-          .get(`http://localhost:8080/api/community/${photoId}`)
-          .then((response) => {
+        axios.get(`${process.env.VUE_APP_BACKEND_URL}/api/community/${photoId}`)
+          .then(response => {
+            console.log(response.data);  // 데이터를 확인합니다.
+
             this.photoDetail = response.data;
   
             // 좋아요 수 불러오기
@@ -166,8 +167,9 @@
           return;
         }
   
-        axios
-          .post(`http://localhost:8080/api/like/${this.$route.params.photoId}?userId=${userId}`)
+
+        axios.post(`${process.env.VUE_APP_BACKEND_URL}/api/like/${this.$route.params.photoId}`, { userId })
+
           .then(() => {
             if (this.isLiked) {
               this.likesCount -= 1;
