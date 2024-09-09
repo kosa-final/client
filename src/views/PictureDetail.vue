@@ -1,14 +1,14 @@
 <template>
-    <div class="picture-detail-page">
-      <h2 class="page-title">PICTURE</h2>
-      <div class="picture-detail-container">
+    <div class="main-container">
+      <div class="largeTitle">PICTURE</div>
+      <div class="container">
         <div class="left-side">
           <img :src="photoDetail.COMPLETE_PHOTO" alt="Detail Photo" class="photo-image" />
         </div>
         <div class="right-side">
-          <p class="photo-date">{{ formatDate(photoDetail.CREATED_AT) }}</p>
-          <p class="photo-name">{{ photoDetail.ROOM_NAME }}</p>
-          <p class="photo-description">{{ photoDetail.NOTE || '메모가 없습니다.' }}</p>
+          <p class="middleTitle">{{ photoDetail.ROOM_NAME }}</p>
+          <p class="smallTitle">{{ formatDate(photoDetail.CREATED_AT) }}</p>
+          <p>{{ photoDetail.NOTE || '메모가 없습니다.' }}</p>
           <div class="like-section">
             <button @click="toggleLike" :class="{ liked: isLiked }">
               <span v-if="isLiked">♥</span>
@@ -20,7 +20,7 @@
           <!-- 댓글 섹션 -->
           <div class="comment-section">
             <div class="comment-header">
-              <h3>댓글</h3>
+              <p class="middleTitle">댓글</p>
               <!-- 더보기/접기 버튼 (드롭다운 형식) -->
               <button v-if="comments.length > 5" @click="toggleComments" class="dropdown-toggle">
                 <span v-if="showAllComments">▲</span>
@@ -30,14 +30,17 @@
             <ul class="comment-list">
               <li v-for="comment in visibleComments" :key="comment.commentId" class="comment-item">
                 <div class="comment-content">
-                  <strong>{{ comment.nickname }}</strong>: {{ comment.content }}
+                  <p><strong>{{ comment.nickname }}</strong></p>
+                  <p>{{ comment.content }}</p>
                 </div>
-                <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+                <p class="smallTitle">{{ formatDate(comment.createdAt) }}</p>
               </li>
             </ul>
   
             <textarea v-model="newComment" placeholder="댓글을 입력하세요"></textarea>
-            <button @click="addComment">등록</button>
+            <div class="right">
+              <button @click="addComment">등록</button>
+            </div>
           </div>
         </div>
       </div>
@@ -213,162 +216,115 @@
   };
   </script>
   
-  <style scoped>
-  .picture-detail-page {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 20px;
-  }
-  
-  .page-title {
-    font-size: 35px;
-    color: #db574d;
-    text-align: center;
-    margin-bottom: 50px;
-  }
-  
-  .picture-detail-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 50px;
-    max-width: 1200px;
-  }
-  
-  .left-side {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-left: -250px;
-  }
-  
-  .photo-image {
-    width: auto;
-    height: 650px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .right-side {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    margin-left: 100px;
-    margin-top: 100px;
-  }
-  
-  .photo-date {
-    font-size: 25px;
-    color: #666;
-    margin: 5px 0;
-  }
-  
-  .photo-name {
-    font-size: 18px;
-    color: #db574d;
-    margin: 5px 0;
-  }
-  
-  .photo-description {
-    font-size: 18px;
-    color: #333;
-    margin-bottom: 20px;
-  }
-  
-  .like-section {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 30px;
-    color: #db574d;
-  }
-  
-  button.liked {
-    color: red;
-    font-size: 36px;
-  }
-  
-  .like-count {
-    font-size: 24px;
-    margin-left: 10px;
-  }
-  
-  .comment-section {
-    margin-top: 20px;
-  }
-  
-  .comment-section button {
-    background-color: #db574d; /* 등록 버튼 배경색 */
-    color: white; /* 등록 버튼 글자색 */
-    border: none;
-    padding: 10px 10px; /* 패딩 조정 (왼쪽/오른쪽 30px, 위/아래 10px) */
-    font-size: 16px; /* 폰트 크기 조정 */
-    cursor: pointer;
-    margin-left: -10px; /* 댓글 입력창과의 간격 */
-    border-radius: 5px; /* 모서리 둥글게 */
-    width: 60px;
-    height: 40px;
-
+<style scoped>
+.main-container {
+  position: relative;
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
 }
 
-.comment-section textarea {
-    width: 400px; /* 등록 버튼 옆에 입력창이 맞춰지도록 너비 조정 */
-    height: 40px; /* 높이 조정 */
-    padding: 10px; /* 내부 패딩 */
-    margin-right: -10px; /* 등록 버튼과의 간격 */
-    font-size: 16px; /* 폰트 크기 */
-    box-sizing: border-box; /* 패딩 포함한 너비 계산 */
-    margin-top: 20px;
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-grow: 1;
+  margin-top: 20px;
 }
 
-  
-  .comment-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .comment-item {
-    display: flex;
-    justify-content: space-between; /* 닉네임/댓글과 날짜를 양쪽으로 배치 */
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #e0e0e0; /* 댓글 아이템 간 구분선 추가 */
-    margin-bottom: 10px;
-  }
-  
-  .comment-content {
-    font-size: 16px;
-    color: #333;
-  }
-  
-  .comment-date {
-    font-size: 14px;
-    color: #999;
-    margin-left: 20px;
-  }
-  
-/* 드롭다운 버튼 스타일 */
+.left-side {
+  margin-right: 180px;
+  margin-top: 30px;
+}
+
+.photo-image {
+  position: relative;
+  width: 600px;
+  height: 800px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.right-side {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  margin: 30px;
+}
+
+.middleTitle {
+	text-align: left;
+  margin: 0;
+}
+
+.like-section {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #db574d;
+}
+
+button.liked {
+  color: red;
+  font-size: 20px;
+}
+
+.like-count {
+  font-size: 16px;
+  margin-left: 10px;
+}
+
+.comment-section {
+  margin: 10px;
+}
+
 .comment-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
 }
 
-.comment-header h3 {
+.comment-list {
+  list-style-type: none;
+  padding: 0;
   margin: 0;
-  font-size: 18px;
-  color: #333;
+}
+
+.comment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  padding: 5px 0;
+}
+
+.comment-content {
+  flex: 1;
+}
+
+.comment-date {
+  font-size: 0.9em;
+  color: #666;
+}
+
+textarea {
+  width: 100%;
+  height: 60px; /* Adjust height as needed */
+  margin: 10px 0;
+  padding: 5px;
+  box-sizing: border-box;
+  background-color: transparent;
 }
 
 .dropdown-toggle {
@@ -380,5 +336,8 @@
   color: #666 !important; /* 삼각형 색상 설정 */
 }
 
+.right {
+  text-align: right;
+}
 </style>
   

@@ -18,19 +18,17 @@
         </div>
       </div>
       <div class="right-panel">
-        <div id="session-header">
+        <div>
           <p class="middleTitle">방 이름</p>
-          <p>{{ roomInfo.roomName }}</p>
-          <p class="middleTitle">초대코드</p>
-          <p>{{ roomSession }}</p>
-          <p class="middleTitle">회원유형</p>
-          <p>{{ userRole }}</p>
+          <p class="output">{{ roomInfo.roomName }}({{ userRole }})</p>
           <p class="middleTitle">안내사항</p>
-          행복을 드리는 4cutstudio 입니다 :)
-          <button class="btn-rounded" @click="capturePhotoOrigin" >
+          <p>1. 입장 순서대로 프레임이 선정됩니다</p>
+          <p>2. 인원이 다 차면 자동으로 촬영 버튼이 활성화됩니다</p>
+          <p>3. 사진 촬영은 방장만 가능합니다</p>
+        </div>
+          <button class="btn-rounded" @click="capturePhotoOrigin" :disabled="!isCaptureButtonEnabled || hasCapturedPhoto">
             사진촬영
           </button>
-        </div>
       </div>
     </div>
     <div class="center">
@@ -297,7 +295,7 @@ export default {
 .main-container {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: auto;
   display: flex;
   flex-direction: column;
 }
@@ -311,18 +309,29 @@ export default {
 }
 
 .video-container {
-  width: 70%;
+  margin-right: 180px;
+  margin-top: 30px;
 }
 
-
 .controls-container {
-  width: 30%;
+  width: 300px; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .photo-origin {
   position: relative;
-  width: 600px; /* 전체 프레임의 너비 */
-  height: 800px; /* 전체 프레임의 높이 */
+  width: 600px;
+  height: 800px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.photo-origin img {
+  width: 100%;
+  height: auto;
 }
 
 .frame-image {
@@ -352,6 +361,14 @@ export default {
   transform: scaleX(-1); /* 좌우반전 */
 }
 
+.right-panel {
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .modal {
   position: fixed;
   top: 0;
@@ -372,7 +389,7 @@ export default {
   text-align: center;
 }
 
-.modal-btn {
+.btn {
   margin: 10px;
 }
 </style>

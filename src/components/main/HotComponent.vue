@@ -40,10 +40,12 @@ export default {
         this.photos = response.data
           .map((photo) => photo.completePhoto)
           .filter((photo) => photo !== null);
+          console.log(response.data);
       })
       .catch((error) => {
         console.error('Error fetching photos:', error);
       });
+      
   },
   computed: {
     totalSlides() {
