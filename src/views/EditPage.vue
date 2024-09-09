@@ -44,6 +44,9 @@ export default {
   props: ['roomSession'],
   data() {
     return {
+          // 기존 코드 유지
+    canvasWidth: this.$route.query.canvasWidth || 600,  // 전달받은 canvasWidth가 없으면 기본값 600
+    canvasHeight: this.$route.query.canvasHeight || 800,  // 전달받은 canvasHeight가 없으면 기본값 800
       // 드로잉 및 스티커 관련 상태 추가
       drawingActions: [],  // 드로잉 작업 저장
       stickerActions: [],  // 스티커 작업 저장
@@ -198,38 +201,39 @@ export default {
   },
 
   initializeCanvas() {
-      if (!this.roomInfo.originPhoto) {
-        console.error('Cannot initialize canvas: originPhoto is undefined');
-        return;
-      }
+  if (!this.roomInfo.originPhoto) {
+    console.error('Cannot initialize canvas: originPhoto is undefined');
+    return;
+  }
 
-      this.canvas = this.$refs.canvas;
-      this.context = this.canvas.getContext("2d");
-      this.canvas.width = 650;
-      this.canvas.height = 800;
+  this.canvas = this.$refs.canvas;
+  this.context = this.canvas.getContext("2d");
+  // 캔버스 크기를 동적으로 설정
+  this.canvas.width = this.canvasWidth;
+  this.canvas.height = this.canvasHeight;
 
-      const image = new Image();
-      image.crossOrigin = "Anonymous";
-      image.src = this.roomInfo.originPhoto;
+  const image = new Image();
+  image.crossOrigin = "Anonymous";
+  image.src = this.roomInfo.originPhoto;
 
-      image.onload = () => {
-        this.context.drawImage(image, 0, 0, this.canvas.width, this.canvas.height);
-      };
+  image.onload = () => {
+    this.context.drawImage(image, 0, 0, this.canvas.width, this.canvas.height);
+  };
 
-      this.fixedDrawing = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height); // 고정된 이미지 초기화
+  this.fixedDrawing = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
 
-      this.canvas.addEventListener("mousedown", this.startDrawing.bind(this));
-      this.canvas.addEventListener("mousemove", this.draw.bind(this));
-      this.canvas.addEventListener("mouseup", this.stopDrawing.bind(this));
+  this.canvas.addEventListener("mousedown", this.startDrawing.bind(this));
+  this.canvas.addEventListener("mousemove", this.draw.bind(this));
+  this.canvas.addEventListener("mouseup", this.stopDrawing.bind(this));
 
-      this.canvas.addEventListener("mouseout", this.stopDrawing);
-      this.canvas.addEventListener("touchstart", this.startDrawing);
-      this.canvas.addEventListener("touchmove", this.draw);
-      this.canvas.addEventListener("touchend", this.stopDrawing);
+  this.canvas.addEventListener("mouseout", this.stopDrawing);
+  this.canvas.addEventListener("touchstart", this.startDrawing);
+  this.canvas.addEventListener("touchmove", this.draw);
+  this.canvas.addEventListener("touchend", this.stopDrawing);
 
-      this.canvas.addEventListener("dragover", this.allowDrop);
-      this.canvas.addEventListener("drop", this.dropSticker);
-    },
+  this.canvas.addEventListener("dragover", this.allowDrop);
+  this.canvas.addEventListener("drop", this.dropSticker);
+},
     fixDrawing() {
       this.fixedDrawing = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height); // 다른 사용자 작업 고정
     },
