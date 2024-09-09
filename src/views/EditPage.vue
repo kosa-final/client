@@ -30,7 +30,6 @@
           <!-- 마지막 차례일 때 사진 전송하기 버튼 표시 -->
           <button v-if="isMyTurn && isLastTurn" class="btn-large" @click="saveCanvas">{{isHost}}사진 전송하기</button>
         </div>
-      </div>
     </div>
   </div>
 </template>
