@@ -18,7 +18,7 @@ export default {
   },
   mounted() {
     const storedToken = localStorage.getItem('accessToken');
-    
+    console.log(this.$store.state.accessToken);
     // Vuex에 accessToken이 없고 로컬 스토리지에 저장된 토큰이 있다면 갱신
     if (storedToken && !this.$store.state.accessToken) {
       this.$store.dispatch('fetchUserInfo'); // Vuex 상태 갱신

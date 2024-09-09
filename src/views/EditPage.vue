@@ -28,7 +28,8 @@
           <button v-if="isMyTurn && !isLastTurn" @click="passTurn" class="btn-rounded turnbtn">순서 넘기기</button>
 
           <!-- 마지막 차례일 때 사진 전송하기 버튼 표시 -->
-          <button v-if="isMyTurn && isLastTurn" class="btn-large" @click="saveCanvas">사진 전송하기</button>
+          <button v-if="isMyTurn && isLastTurn" class="btn-large" @click="saveCanvas">{{isHost}}사진 전송하기</button>
+        </div>
       </div>
     </div>
   </div>
@@ -49,7 +50,7 @@ import sunglass from "@/assets/sticker/sunglass.png";
 
 export default {
   name: 'EditPage',
-  props: ['roomSession'],  
+  props: ['roomSession'],
   data() {
     return {
       // 드로잉 및 스티커 관련 상태 추가
@@ -74,7 +75,8 @@ export default {
       currentTurnNickname: "",  
       localUserNickname: '', 
       restoreArray: [],  // 캔버스 상태를 저장하는 배열
-      index: -1  // 현재 상태 배열의 인덱스 
+      index: -1,  // 현재 상태 배열의 인덱스 
+      isHost: this.$route.params.isHost
     };
   },
   created() {
@@ -85,6 +87,7 @@ export default {
     } else {
       console.error('No userNickname found in local storage!');
     }
+    this.isHost = this.$route.query.isHost === 'true'; 
     this.fetchRoomInfo().then(() => {
       this.initializeWebSocket();
     });
@@ -135,6 +138,7 @@ export default {
         this.drawingActions.pop();
       }
 
+
         if (data.type === 'STICKER') {
           const sticker = new Image();
           sticker.src = data.stickerSrc;
@@ -143,7 +147,28 @@ export default {
             this.context.drawImage(sticker, data.x, data.y, 100, 100);
           };
         }
+        // PHOTO_SAVED 메시지 처리
+        if (data.type === 'PHOTO_SAVED') {
+          // 만약 현재 사용자가 사진 전송을 이미 한 사용자라면 이동하지 않도록 설정
+          if (this.userId !== data.userId) { 
+            console.log('PHOTO_SAVED 메시지 수신: ', data.imageUrl);
+            this.$router.push({
+              name: 'Save',
+              params: { 
+                roomSession: this.roomSession, 
+                imageUrl: encodeURIComponent(data.imageUrl), 
+                userId: this.userId ,
+                isHost: this.isHost,  // 여기서 문자열로 변환하지 말고, boolean 값 그대로 전달
+                sessionId: this.userId // 세션 ID를 전달
 
+              }
+            }).catch(err => {
+              if (err.name !== 'NavigationDuplicated') {
+                console.error(err);
+              }
+            });
+          }
+}
         if (data.type === 'TURN') {
         // Vue.set을 사용해 isMyTurn 상태를 동적으로 설정
         this.$set(this, 'isMyTurn', data.userId === this.userId);
@@ -316,32 +341,42 @@ undoLast() {
       event.preventDefault();
     },
     async saveCanvas() {
-      const imageBase64 = this.canvas.toDataURL('image/png');
-      const photoData = {
-        originPhoto: imageBase64,
-        roomId: this.roomInfo.roomId 
-      };
-      
-      try {
-        const response = await axios.post(`${process.env.VUE_APP_BACKEND_URL}/photo/complete?roomSession=${this.roomSession}`, photoData, {
-          headers: { 'Content-Type': 'application/json' }
-        });
-        console.log('Image successfully uploaded to S3:', response.data);
-        this.navigateToSavePage(response.data);
-      } catch (error) {
-        console.error('Error uploading image to S3:', error.response ? error.response.data : error.message);
-      }
-    },
-    navigateToSavePage(imageUrl) {
+    const imageBase64 = this.canvas.toDataURL('image/png');
+    const photoData = {
+      originPhoto: imageBase64,
+      roomId: this.roomInfo.roomId 
+    };
+  try {
+    const response = await axios.post(`${process.env.VUE_APP_BACKEND_URL}/photo/complete?roomSession=${this.roomSession}`, photoData, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    // 모든 사용자에게 페이지 이동 메시지 전송
+    this.webSocket.send(JSON.stringify({
+      type: 'PHOTO_SAVED',
+      imageUrl: response.data
+    }));
+
+    const currentRoute = this.$route.fullPath;
+    const targetRoute = `/save/${this.roomSession}`;
+
+    // 중복된 경로로 이동하지 않도록 처리
+    if (currentRoute !== targetRoute) {
       this.$router.push({
-          name: 'Save',
-          params: { 
-              roomSession: this.roomSession, 
-              imageUrl: encodeURIComponent(imageUrl), 
-              userId: this.userId 
-          }
+        name: 'Save',
+        params: { 
+          roomSession: this.roomSession, 
+          imageUrl: encodeURIComponent(response.data), 
+          userId: this.userId 
+        }
       });
-    },
+    }
+    
+  } catch (error) {
+    console.error('Error uploading image to S3:', error.response ? error.response.data : error.message);
+  }
+},
+
     dragStart(event) {
       this.draggingSticker = event.target;
     },

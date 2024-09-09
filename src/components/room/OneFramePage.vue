@@ -1,42 +1,49 @@
 <template>
-  <div id="session">
+  <div class="main-container">
     <div class="largeTitle">ENTER THE ROOM</div>
     <div class="container">
       <div class="video-container">
-        <div class="photo-origin" ref="photoOrigin">
-          <!-- 프레임 이미지 -->
+        <div class="photo-origin" ref="photoOrigin" :style="{ backgroundImage: hasCapturedPhoto ? 'url(' + photoImageUrl + ')' : '' }">
+          <!-- Frame Image -->
           <img :src="frameImageUrl" alt="Frame" class="frame-image" />
 
-          <!-- 비디오 (퍼블리셔 + 구독자들) -->
-          <div class="video">
+          <!-- Videos (Publisher + Subscribers) -->
+          <div class="video" v-if="!hasCapturedPhoto">
             <user-video
               :stream-manager="publisher"
               @click.native="updateMainVideoStreamManager(publisher)"
               class="video-item"
             />
-            <user-video
-              v-for="sub in subscribers"
-              :key="sub.stream.connection.connectionId"
-              :stream-manager="sub"
-              @click.native="updateMainVideoStreamManager(sub)"
-              class="video-item"
-            />
           </div>
         </div>
       </div>
-      <div class="controls-container">
+      <div class="right-panel">
         <div id="session-header">
-          <h1 id="session-title">{{ sessionId }}</h1>
-          <input
-            class="btn btn-large btn-danger"
-            type="button"
-            id="buttonLeaveSession"
-            @click="leaveSession"
-            value="Leave session"
-          />
-          <!-- 캡처 버튼 추가 -->
-          <button class="btn btn-large btn-primary" @click="capturePhotoOrigin">캡처하기</button>
+          <p class="middleTitle">방 이름</p>
+          <p>{{ roomInfo.roomName }}</p>
+          <p class="middleTitle">초대코드</p>
+          <p>{{ roomSession }}</p>
+          <p class="middleTitle">회원유형</p>
+          <p>{{ userRole }}</p>
+          <p class="middleTitle">안내사항</p>
+          행복을 드리는 4cutstudio 입니다 :)
+          <button class="btn-rounded" @click="capturePhotoOrigin" >
+            사진촬영
+          </button>
         </div>
+      </div>
+    </div>
+    <div class="center">
+      <button class="btn-large" @click="showLeaveModal">사진 꾸미러가기</button>
+    </div>
+
+    <!-- 방 나가기 모달 -->
+    <div v-if="isLeaveModalVisible" class="modal">
+      <div class="modal-content">
+        <p>방을 나가면 다시 못 돌아옵니다</p>
+        <p>방을 나가시겠습니까?</p>
+        <button @click="leaveSession" class="modal-btn">네</button>
+        <button @click="hideLeaveModal" class="modal-btn">아니요</button>
       </div>
     </div>
   </div>
@@ -53,10 +60,11 @@ axios.defaults.headers.post["Content-Type"] = "application/json";
 const APPLICATION_SERVER_URL = "https://4cutstudio.store/";
 
 export default {
-  name: "OneFramePage",
+  name: "FourFramePage",
   components: {
     UserVideo,
   },
+  props: ['roomInfo'],
   data() {
     return {
       OV: undefined,
@@ -64,63 +72,66 @@ export default {
       mainStreamManager: undefined,
       publisher: undefined,
       subscribers: [],
-      sessionId: this.$route.query.sessionId,
-      userName: this.$route.query.userName,
-      selectedFrame: this.$route.query.frame,
+      roomSession: this.$route.params.roomSession,
+      userId: this.$route.params.userId,
+      userNickname: this.$route.params.userNickname, 
+      selectedFrame: this.$route.params.frame,
       frameImageUrl: "",
+      isLeaveModalVisible: false,
+      photoImageUrl: "",
+      hasCapturedPhoto: false,
+      isHost: this.$route.params.isHost,
+      isCaptureButtonEnabled: false,
     };
   },
+  computed: {
+    userRole() {
+      return this.isHost ? '방장' : '참가자';
+    },
+  },
   methods: {
-    setFrameImageUrl() {
-      if (this.selectedFrame) {
-        try {
-          this.frameImageUrl = require(`@/assets/frame/${this.selectedFrame}.png`);
-        } catch (error) {
-          console.error("Error loading frame image:", error);
-        }
-      } else {
-        alert("선택된 프레임이 없습니다");
-      }
+    setFrameImageUrl() {		 
+      this.frameImageUrl = require(`@/assets/frame/${this.selectedFrame}.png`);
+
     },
     
     joinSession() {
       this.OV = new OpenVidu();
       this.session = this.OV.initSession();
 
+      // 사진 공유 신호 수신
+      this.session.on('signal:photo-shared', event => {
+        this.photoImageUrl = event.data;
+        this.hasCapturedPhoto = true;										   
+      });
+
+      // 새로운 스트림이 생성되었을 때 처리
       this.session.on("streamCreated", ({ stream }) => {
-        // 참가자 수 제한
-        if (this.subscribers.length >= 0) {
+        if (this.subscribers.length >= 3) {
           alert("참가자 수가 최대 한도를 초과했습니다.");
-          this.$router.push('/make')
-        }
-        const subscriber = this.session.subscribe(stream);
-        this.subscribers.push(subscriber);
-        this.$nextTick(this.updateVideoStyles);
-      });
-
-      this.session.on("streamDestroyed", ({ stream }) => {
-        const index = this.subscribers.indexOf(stream.streamManager, 0);
-        if (index >= 0) {
-          this.subscribers.splice(index, 1);
+          this.$router.push('/make');
+        } else {
+          const subscriber = this.session.subscribe(stream);
+          this.subscribers.push(subscriber);
+          this.updateCaptureButtonState(); 
+          this.$nextTick(this.updateVideoStyles);
         }
       });
 
-      this.session.on("exception", ({ exception }) => {
-        console.warn(exception);
-      });
-
-      this.getToken(this.sessionId).then((token) => {
+      // OpenVidu 토큰을 받아 세션에 연결
+      this.getToken(this.roomSession).then((token) => {
         this.session
-          .connect(token, { clientData: this.userName })
+          .connect(token, { clientData: JSON.stringify({ userId: this.userId, nickname: this.userNickname }) }) 
           .then(() => {
             let publisher = this.OV.initPublisher(undefined, {
-              audioSource: undefined,
-              videoSource: undefined,
-              publishAudio: true,
-              publishVideo: true,
+              audioSource: undefined, 
+              videoSource: undefined, 
+              publishAudio: true, 
+              publishVideo: true, 
               frameRate: 30,
               insertMode: "APPEND",
               mirror: false,
+              resolution: "600x800"
             });
 
             this.mainStreamManager = publisher;
@@ -134,17 +145,46 @@ export default {
           });
       });
 
+      this.session.on("streamDestroyed", ({ stream }) => {
+        const index = this.subscribers.indexOf(stream.streamManager, 0);
+        if (index >= 0) {
+          this.subscribers.splice(index, 1);
+          this.updateCaptureButtonState(); 
+        }
+      });
+
+      this.session.on("exception", ({ exception }) => {
+        console.warn(exception);
+      });
+
       window.addEventListener("beforeunload", this.leaveSession);
     },
 
     leaveSession() {
-      if (this.session) this.session.disconnect();
-      this.session = undefined;
-      this.mainStreamManager = undefined;
-      this.publisher = undefined;
-      this.subscribers = [];
-      this.OV = undefined;
-      window.removeEventListener("beforeunload", this.leaveSession);
+    if (this.session) this.session.disconnect();
+    this.session = undefined;
+    this.mainStreamManager = undefined;
+    this.publisher = undefined;
+    this.subscribers = [];
+    this.OV = undefined;
+    window.removeEventListener("beforeunload", this.leaveSession);
+
+    this.$router.push({
+      path: `/edit/${this.roomSession}`,
+      query: {
+        roomSession: this.roomSession,
+        userId: this.userId,
+        isHost: this.isHost.toString() 
+      }
+    });
+  },
+
+    showLeaveModal() {
+      this.isLeaveModalVisible = true;
+    },
+
+    hideLeaveModal() {
+      this.isLeaveModalVisible = false;
     },
 
     updateMainVideoStreamManager(stream) {
@@ -152,15 +192,15 @@ export default {
       this.mainStreamManager = stream;
     },
 
-    async getToken(sessionId) {
-      const sessionIdFromServer = await this.createSession(sessionId);
-      return await this.createToken(sessionIdFromServer);
+    async getToken(roomSession) {
+      const roomSessionFromServer = await this.createSession(roomSession);
+      return await this.createToken(roomSessionFromServer);
     },
 
-    async createSession(sessionId) {
+    async createSession(roomSessionFromServer) {
       const response = await axios.post(
         APPLICATION_SERVER_URL + "api/sessions",
-        { customSessionId: sessionId },
+        { customSessionId: roomSessionFromServer },
         {
           headers: {
             "Content-Type": "application/json",
@@ -170,9 +210,9 @@ export default {
       return response.data;
     },
 
-    async createToken(sessionIdFromServer) {
+    async createToken(roomSessionFromServer) {
       const response = await axios.post(
-        APPLICATION_SERVER_URL + "api/sessions/" + sessionIdFromServer + "/connections",
+        APPLICATION_SERVER_URL + "api/sessions/" + roomSessionFromServer + "/connections",
         {},
         {
           headers: {
@@ -182,8 +222,8 @@ export default {
       );
       return response.data;
     },
-
-    // Force apply video styles function
+    
+										
     updateVideoStyles() {
       const videos = this.$el.querySelectorAll("video");
       videos.forEach((video) => {
@@ -193,39 +233,87 @@ export default {
       });
     },
 
-    capturePhotoOrigin() {
-      const element = this.$refs.photoOrigin;  
-      html2canvas(element).then((canvas) => {
-        const link = document.createElement("a");
-        link.href = canvas.toDataURL("image/png");
-        link.download = "capture.png";
-        link.click();
-      }).catch((error) => {
-        console.error("Error capturing photo-origin:", error);
-      });
-    }
+    updateCaptureButtonState() {
+      this.isCaptureButtonEnabled = this.subscribers.length >= 3;
+    },
+
+    async capturePhotoOrigin() {
+      if (!this.isHost) {
+        alert("방장만 사진을 촬영할 수 있습니다");
+        return;
+      }
+
+      const element = this.$refs.photoOrigin;
+
+      try {
+        const canvas = await html2canvas(element, {
+          width: 600,   
+          height: 800,  
+        });
+        const imageData = canvas.toDataURL("image/png");
+
+        this.photoImageUrl = imageData;
+        this.hasCapturedPhoto = true;
+        this.isCaptureButtonEnabled = false;
+
+        const response = await axios.post(
+          `${process.env.VUE_APP_BACKEND_URL}/photo/save`,
+          { 
+            originPhoto: imageData,
+            roomId: this.roomInfo.roomId
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            }
+          }
+        );
+
+        this.photoImageUrl = response.data;  
+
+        this.session.signal({
+          data: this.photoImageUrl, 
+          to: [],                   
+          type: 'photo-shared'       
+        });
+
+        alert('이미지가 성공적으로 촬영되었습니다');
+      } catch (error) {
+        console.error("Error capturing or saving image:", error.response ? error.response.data : error.message);
+      }
+    },
   },
   updated() {
     this.updateVideoStyles();
   },
   created() {
-    this.setFrameImageUrl(); 
+    this.setFrameImageUrl();
     this.joinSession();
   }
 };
 </script>
 
 <style scoped>
-.container {
+.main-container {
+  position: relative;
   width: 100%;
-  height: auto;
-  display: flex; 
-  justify-content: space-between;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-grow: 1;
+  margin-top: 20px;
 }
 
 .video-container {
   width: 70%;
 }
+
 
 .controls-container {
   width: 30%;
@@ -241,7 +329,7 @@ export default {
   position: absolute;
   width: 100%;
   height: 100%;
-  z-index: 2; /* 프레임을 최상단에 위치 */
+  z-index: 2;
 }
 
 .video {
@@ -264,8 +352,27 @@ export default {
   transform: scaleX(-1); /* 좌우반전 */
 }
 
-.video-item:nth-child(3),
-.video-item:nth-child(4) {
-  transform: translateY(-8px) scaleX(-1); /* 8px 위로 이동하면서 좌우반전 */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.modal-btn {
+  margin: 10px;
 }
 </style>
