@@ -35,116 +35,122 @@
   import _ from 'lodash'; // lodash의 debounce를 사용
   
   export default {
-    name: 'SavePage',
-    props: ['roomSession', 'userId'],
-    data() {
-      return {
-        imageUrl: decodeURIComponent(this.$route.params.imageUrl || ''),
-        isPublic: true,
-        memo: '',
-        // 문자열 "true" 또는 boolean을 모두 고려해 초기화
-        isHost: this.$route.params.isHost === true || this.$route.params.isHost === 'true',
-        webSocket: null,
-        sessionId: this.$route.params.sessionId || null, // sessionId 받아오기
-        broadcastDebounced: _.debounce(this.broadcastChanges, 500) // 500ms 딜레이 후 전송
-      };
+  name: 'SavePage',
+  props: ['roomSession', 'userId'],
+  data() {
+    return {
+      imageUrl: decodeURIComponent(this.$route.params.imageUrl || ''),
+      isPublic: true,
+      memo: '',
+      isHost: this.$route.params.isHost === true || this.$route.params.isHost === 'true',
+      webSocket: null,
+      sessionId: this.$route.params.sessionId || null, // sessionId 받아오기
+      broadcastDebounced: _.debounce(this.broadcastChanges, 500) // 500ms 딜레이 후 전송
+    };
+  },
+  watch: {
+    isPublic() {
+      this.broadcastDebounced();
     },
-    watch: {
-      isPublic() {
-        this.broadcastDebounced();
-      },
-      memo() {
-        this.broadcastDebounced();
+    memo() {
+      this.broadcastDebounced();
+    }
+  },
+  created() {
+  console.log('isHost in SavePage:', this.$route.params.isHost);
+},
+  methods: {
+    // 공개 여부 설정
+    setVisibility(isPublic) {
+      this.isPublic = isPublic;
+    },
+
+    // WebSocket을 통해 변경 사항 전송
+    broadcastChanges() {
+  console.log("브로드 캐스팅", this.sessionId);
+  if (this.webSocket && this.webSocket.readyState === WebSocket.OPEN) {
+    const payload = {
+      type: 'UPDATE_SAVE_PAGE',
+      isPublic: this.isPublic,
+      memo: this.memo,
+      sessionId: this.sessionId
+    };
+    console.log('Broadcasting changes: ', payload); // 로그로 확인
+    this.webSocket.send(JSON.stringify(payload));
+  }
+}
+
+,
+
+listenForUpdates() {
+  this.webSocket.onmessage = (message) => {
+    console.log('WebSocket 메시지 수신:', message.data); // 수신된 메시지 로그 확인
+    const data = JSON.parse(message.data);
+
+    if (data.type === 'UPDATE_SAVE_PAGE') {
+      console.log('UPDATE_SAVE_PAGE 메시지 수신:', data);
+      if (data.sessionId !== this.sessionId) {
+        this.isPublic = data.isPublic;
+        this.memo = data.memo;
+        console.log('공개 여부 및 메모 업데이트:', this.isPublic, this.memo);
       }
-    },
-    methods: {
-      // 공개 여부 설정
-      setVisibility(isPublic) {
-        this.isPublic = isPublic;
-      },
-  
-      // WebSocket을 통해 변경 사항 전송
-      broadcastChanges() {
-        console.log("브로드 캐스팅", this.sessionId);
-        if (this.webSocket && this.webSocket.readyState === WebSocket.OPEN) {
-          const payload = {
-            type: 'UPDATE_SAVE_PAGE',
-            isPublic: this.isPublic,
-            memo: this.memo,
-            sessionId: this.sessionId
-          };
-          console.log('Broadcasting changes: ', payload); // 로그로 확인
-          this.webSocket.send(JSON.stringify(payload));
-        }
-      },
-  
-      listenForUpdates() {
-        this.webSocket.onmessage = (message) => {
-          console.log('WebSocket 메시지 수신:', message.data); // 수신된 메시지 로그 확인
-          const data = JSON.parse(message.data);
-  
-          if (data.type === 'UPDATE_SAVE_PAGE') {
-            console.log('UPDATE_SAVE_PAGE 메시지 수신:', data);
-            if (data.sessionId !== this.sessionId) {
-              this.isPublic = data.isPublic;
-              this.memo = data.memo;
-              console.log('공개 여부 및 메모 업데이트:', this.isPublic, this.memo);
-            }
-          }
-        };
-  
-        this.webSocket.onerror = (error) => {
-          console.error("WebSocket 오류:", error);
-        };
-  
-        this.webSocket.onclose = () => {
-          console.warn("WebSocket 연결이 닫힘");
-        };
-      },
-  
-      async saveCompletePhoto() {
-        const payload = {
-          isPublic: this.isPublic ? 'true' : 'false',
-          note: this.memo
-        };
-        try {
-          await axios.post(`${process.env.VUE_APP_BACKEND_URL}/photo/final?roomSession=${this.roomSession}`, payload);
-          alert('사진이 성공적으로 저장되었습니다!');
-          this.$router.push({ name: 'Home' });
-        } catch (error) {
-          alert('사진 저장 중 오류가 발생했습니다.');
-          console.error('Error:', error);
-        }
-      },
-  
-      initializeWebSocket() {
-        this.webSocket = new WebSocket(`ws://localhost:8080/ws/save?roomSession=${encodeURIComponent(this.roomSession)}&sessionId=${encodeURIComponent(this.sessionId)}`);
-  
-        this.webSocket.onopen = () => {
-          console.log("WebSocket 연결 성공");
-          this.broadcastChanges(); // 연결 후 상태 전송
-        };
-  
-        this.webSocket.onclose = () => {
-          console.warn("WebSocket 연결이 닫힘, 재연결 시도...");
-          setTimeout(() => {
-            this.initializeWebSocket();
-          }, 1000); // 끊어진 경우 재연결 시도
-        };
-  
-        this.webSocket.onerror = (error) => {
-          console.error("WebSocket 오류 발생:", error);
-        };
-  
-        this.listenForUpdates(); // WebSocket 수신 대기
-      }
-    },
-    created() {
-      this.initializeWebSocket(); // WebSocket 연결 설정
     }
   };
-</script>
 
+  this.webSocket.onerror = (error) => {
+    console.error("WebSocket 오류:", error);
+  };
+
+  this.webSocket.onclose = () => {
+    console.warn("WebSocket 연결이 닫힘");
+  };
+},
+
+
+
+    async saveCompletePhoto() {
+      const payload = {
+        isPublic: this.isPublic ? 'true' : 'false',
+        note: this.memo
+      };
+      try {
+        await axios.post(`${process.env.VUE_APP_BACKEND_URL}/photo/final?roomSession=${this.roomSession}`, payload);
+        alert('사진이 성공적으로 저장되었습니다!');
+        this.$router.push({ name: 'Home' });
+      } catch (error) {
+        alert('사진 저장 중 오류가 발생했습니다.');
+        console.error('Error:', error);
+      }
+    },
+    initializeWebSocket() {
+  this.webSocket = new WebSocket(`ws://localhost:8080/ws/save?roomSession=${encodeURIComponent(this.roomSession)}&sessionId=${encodeURIComponent(this.sessionId)}`);
+  
+  this.webSocket.onopen = () => {
+    console.log("WebSocket 연결 성공");
+    this.broadcastChanges(); // 연결 후 상태 전송
+  };
+
+  this.webSocket.onclose = () => {
+    console.warn("WebSocket 연결이 닫힘, 재연결 시도...");
+    setTimeout(() => {
+      this.initializeWebSocket();  
+    }, 1000); // 끊어진 경우 재연결 시도
+  };
+
+  this.webSocket.onerror = (error) => {
+    console.error("WebSocket 오류 발생:", error);
+  };
+
+  this.listenForUpdates();  // WebSocket 수신 대기
+}
+  },
+
+
+}
+
+
+  </script>
+  
 
 <style>
 .main-container {
