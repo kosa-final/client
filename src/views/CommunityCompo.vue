@@ -1,16 +1,37 @@
 <template>
     <div class="community-container">
       <h2>COMMUNITY</h2>
+  
+      <!-- 정렬 옵션 -->
       <p class="sort-options">
         <span @click="sortByDate" :class="{ active: sortType === 'date' }">최신순</span> /
         <span @click="sortByPopularity" :class="{ active: sortType === 'popularity' }">인기순</span>
       </p>
+  
+      <!-- 사진 그리드 -->
       <div class="photo-grid">
-        <div v-for="photo in sortedPhotos" :key="photo.PHOTO_ID" class="photo-item" @click="goToDetail(photo.PHOTO_ID)">
-          <img :src="photo.COMPLETE_PHOTO" alt="Community Photo" class="photo-image" />
+        <div v-for="photo in sortedPhotos" :key="photo.PHOTO_ID" class="photo-item">
+          <div class="photo-wrapper">
+            <img
+              :src="photo.COMPLETE_PHOTO"
+              alt="Community Photo"
+              class="photo-image"
+              @click="goToDetail(photo.PHOTO_ID)"
+            />
+            <!-- 좋아요 표시 및 좋아요 토글 -->
+            <div class="like-count-overlay">
+              <button @click.stop="toggleLike(photo)" :class="{ liked: isLiked(photo.PHOTO_ID) }">
+                <span v-if="isLiked(photo.PHOTO_ID)">♥</span>
+                <span v-else>♡</span>
+              </button>
+              <span class="like-count">{{ photo.likesCount }}</span>
+            </div>
+          </div>
           <p>{{ photo.room_name }}</p>
         </div>
       </div>
+  
+      <!-- 페이징 -->
       <div class="pagination">
         <span @click="changePage(currentPage - 1)" :class="{ disabled: currentPage === 1 }" class="arrow">‹</span>
         <button
@@ -27,31 +48,54 @@
   </template>
   
   <script>
-  import axios from 'axios';
+  import { mapGetters, mapActions } from "vuex";
+  import axios from "axios";
   
   export default {
     data() {
       return {
-        photos: [],
-        sortType: 'date',
-        currentPage: 1,
-        photosPerPage: 12,
-        totalPhotos: 0,
+        photos: [], // 전체 커뮤니티 사진
+        sortType: "date", // 기본 정렬 방식 (최신순)
+        currentPage: 1, // 현재 페이지
+        photosPerPage: 12, // 페이지당 사진 개수
+        totalPhotos: 0, // 총 사진 개수
       };
     },
+    watch: {
+      // sortType이 변경될 때마다 다시 fetchCommunityPhotos 호출
+      sortType() {
+        this.fetchCommunityPhotos();
+      },
+    },
     computed: {
+      ...mapGetters(["isLiked"]),
+  
+      // 총 페이지 수 계산
       totalPages() {
         return Math.ceil(this.totalPhotos / this.photosPerPage);
       },
+  
+      // 정렬된 사진 배열 계산 (최신순/인기순 정렬 및 페이징 처리)
       sortedPhotos() {
-        let sorted = [...this.photos];
-        if (this.sortType === 'popularity') {
-          sorted.sort((a, b) => b.user_count - a.user_count);
-        } else {
+        let sorted = [...this.photos]; // 배열 복사
+  
+        // 인기순 정렬 (likesCount 기준)
+        if (this.sortType === "popularity") {
+          sorted.sort((a, b) => b.likesCount - a.likesCount);
+        }
+        // 최신순 정렬 (created_at 기준)
+        else {
           sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         }
-        return sorted.slice((this.currentPage - 1) * this.photosPerPage, this.currentPage * this.photosPerPage);
+  
+        // 페이징 처리
+        return sorted.slice(
+          (this.currentPage - 1) * this.photosPerPage,
+          this.currentPage * this.photosPerPage
+        );
       },
+  
+      // 페이징 버튼 범위 계산
       paginationRange() {
         const rangeSize = 5;
         let start = Math.max(this.currentPage - Math.floor(rangeSize / 2), 1);
@@ -62,40 +106,105 @@
         }
   
         return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-      }
+      },
     },
     methods: {
+      ...mapActions(["toggleLike", "fetchLikedPhotos"]),
+  
+      // 커뮤니티 사진 데이터 가져오기
       fetchCommunityPhotos() {
-        axios.get('http://localhost:8080/api/community')
-          .then(response => {
-            this.photos = response.data;
-            this.totalPhotos = this.photos.length;
+        const userId = localStorage.getItem("userId");
+  
+        axios
+          .get("http://localhost:8080/api/community", {
+            params: { userId, sortType: this.sortType }, // sortType 전달
           })
-          .catch(error => {
-            console.error('커뮤니티 사진 불러오기 실패:', error);
+          .then((response) => {
+            this.photos = response.data.map((photo) => ({
+              ...photo,
+              likesCount: photo.likesCount || 0,
+              PHOTO_ID: photo.PHOTO_ID || photo.id || photo.photoId,
+            }));
+            this.totalPhotos = this.photos.length;
+  
+            // 각 사진에 대한 likesCount 가져오기
+            this.photos.forEach((photo) => {
+              this.fetchLikesCount(photo.PHOTO_ID);
+            });
+          })
+          .catch((error) => {
+            console.error("커뮤니티 사진 불러오기 실패:", error);
           });
       },
+  
+      // API 호출로 좋아요 수 가져오기
+      fetchLikesCount(photoId) {
+        axios
+          .get(`http://localhost:8080/api/likescount/${photoId}/likesCount`)
+          .then((response) => {
+            const photo = this.photos.find((p) => p.PHOTO_ID === photoId);
+            if (photo) {
+              photo.likesCount = response.data;
+            }
+          })
+          .catch((error) => {
+            console.error(`Failed to fetch likes count for photoId: ${photoId}`, error);
+          });
+      },
+  
+      // 좋아요 토글
+      toggleLike(photo) {
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+          alert('로그인이 필요합니다.');
+          return;
+        }
+  
+        axios.post(`http://localhost:8080/api/like/${photo.PHOTO_ID}?userId=${userId}`)
+          .then(() => {
+            if (this.isLiked(photo.PHOTO_ID)) {
+              photo.likesCount -= 1;
+            } else {
+              photo.likesCount += 1;
+            }
+            this.$store.dispatch('toggleLike', photo.PHOTO_ID);
+          })
+          .catch(error => {
+            console.error('좋아요 상태 변경 실패:', error);
+          });
+      },
+  
+      // 최신순 정렬
       sortByDate() {
-        this.sortType = 'date';
+        this.sortType = "date";
       },
+  
+      // 인기순 정렬
       sortByPopularity() {
-        this.sortType = 'popularity';
+        this.sortType = "popularity";
       },
+  
+      // 페이지 변경
       changePage(page) {
         if (page > 0 && page <= this.totalPages) {
           this.currentPage = page;
         }
       },
+  
+      // 사진 상세 페이지로 이동
       goToDetail(photoId) {
-        this.$router.push({ name: 'PictureDetail', params: { photoId } });
-      }
+        this.$router.push({ name: "PictureDetail", params: { photoId } });
+      },
     },
+  
+    // 컴포넌트 마운트 시 사진 데이터를 불러오고, 좋아요 상태를 가져옴
     mounted() {
       this.fetchCommunityPhotos();
-    }
+      this.$store.dispatch("fetchLikedPhotos");
+    },
   };
   </script>
-
+  
   <style scoped>
   .community-container {
     padding: 20px;
@@ -104,7 +213,7 @@
   }
   
   h2 {
-    color: #DB574D;
+    color: #db574d;
     text-align: center;
     font-size: 35px;
     margin-bottom: 50px;
@@ -122,7 +231,7 @@
   }
   
   .sort-options .active {
-    color: #DB574D;
+    color: #db574d;
   }
   
   .photo-grid {
@@ -137,11 +246,13 @@
     align-items: center;
   }
   
+  .photo-wrapper {
+    position: relative;
+  }
+  
   .photo-image {
     width: 100%;
     height: auto;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     cursor: pointer;
   }
   
@@ -150,7 +261,7 @@
     font-size: 16px;
     color: #333;
   }
-  
+    
   .pagination {
     display: flex;
     justify-content: center;
@@ -169,20 +280,55 @@
   }
   
   .pagination button:disabled {
-    background-color: #DB574D;
+    background-color: #db574d;
     cursor: default;
   }
   
   .arrow {
-    font-size: 24px; /* 화살표 크기를 키움 */
-    margin: 0 15px; /* 버튼과의 간격 설정 */
-    color: #999; /* 기본 상태 화살표 색상 */
+    font-size: 24px;
+    margin: 0 15px;
+    color: #999;
     cursor: pointer;
   }
   
   .arrow.disabled {
-    color: #ccc; /* 비활성화된 상태에서는 회색으로 표시 */
+    color: #ccc;
     cursor: default;
   }
-  </style>
+/* 좋아요 스타일 추가 */
+.like-count-overlay {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 16px;
+    color: #fff;
+  }
+
+.like-icon {
+  margin-right: 3px;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #fff;
+}
+
+button.liked {
+  color: red;
+  font-size: 20px;
+  -webkit-text-stroke: 0.5px #fff;
+}
+
+.like-count {
+  margin-left: 5px;
+  font-size: 16px;
+}
+</style>
   
