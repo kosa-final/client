@@ -75,12 +75,6 @@ export default new Router({
       component: MyPageCompo
     },
     {
-      path: '/save/:roomSession',
-      name: 'Save',
-      component: Save,
-      props: true,
-    },
-    {
       path: '/community',
       name: 'Community',
       component: CommunityCompo

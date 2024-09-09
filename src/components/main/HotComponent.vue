@@ -35,7 +35,7 @@ export default {
   },
   mounted() {
     axios
-      .get(`${process.env.VUE_APP_BACKEND_URL}/photo/hot`)
+      .get(`${process.VUE_APP_BACKEND_URL}/photo/hot`)
       .then((response) => {
         this.photos = response.data
           .map((photo) => photo.completePhoto)
