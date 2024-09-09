@@ -29,8 +29,9 @@ export default {
     const code = urlParams.get('code');
     console.log("받은 코드:", code);
 
-      if (code) {
-        axios.get(`/api/kakao/callback?code=${code}`)
+      // if (code) {
+      console.log("받은 코드 2: " + code)
+        axios.get(`${process.env.VUE_APP_BACKEND_URL}/api/kakao/callback?code=${code}`)
           .then(response => {
             console.log("로그인 응답:", response);
             this.accessToken = response.data.accessToken;
@@ -45,7 +46,7 @@ export default {
           .catch(error => {
             console.error('로그인 실패:', error);
           });
-      }
+      // }
     }
   },
   mounted() {

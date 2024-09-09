@@ -35,6 +35,7 @@
           localStorage.setItem('userId', response.data.id);
           localStorage.setItem('nickname', response.data.properties.nickname);
           localStorage.setItem('accessToken', this.accessToken);
+          console.log(response.data);
         })
         .catch(error => {
           console.error('사용자 정보 불러오기 실패:', error);

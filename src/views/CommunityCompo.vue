@@ -116,7 +116,7 @@
         const userId = localStorage.getItem("userId");
   
         axios
-          .get("http://localhost:8080/api/community", {
+          .get(`${process.VUE_APP_BACKEND_URL}/api/community`, {
             params: { userId, sortType: this.sortType }, // sortType 전달
           })
           .then((response) => {
@@ -140,7 +140,7 @@
       // API 호출로 좋아요 수 가져오기
       fetchLikesCount(photoId) {
         axios
-          .get(`http://localhost:8080/api/likescount/${photoId}/likesCount`)
+          .get(`${process.VUE_APP_BACKEND_URL}/api/likescount/${photoId}/likesCount`)
           .then((response) => {
             const photo = this.photos.find((p) => p.PHOTO_ID === photoId);
             if (photo) {
@@ -160,7 +160,7 @@
           return;
         }
   
-        axios.post(`http://localhost:8080/api/like/${photo.PHOTO_ID}?userId=${userId}`)
+        axios.post(`${process.VUE_APP_BACKEND_URL}/api/like/${photo.PHOTO_ID}?userId=${userId}`)
           .then(() => {
             if (this.isLiked(photo.PHOTO_ID)) {
               photo.likesCount -= 1;
