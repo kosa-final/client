@@ -4,6 +4,7 @@ html {
   font-optical-sizing: auto;
   font-weight: 200;
   font-style: normal;
+  font-size: 1.25rem;
 }
 
 /* 정렬 */
@@ -19,7 +20,7 @@ html {
 	color: #DB574D;
 	margin: 20px;
 }
-  
+
 .middleTitle {
 	font-size: 24px;
 	font-weight: 800;
