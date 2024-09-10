@@ -72,13 +72,13 @@
       // 사진 상세 정보 및 좋아요 상태 불러오기
       fetchPhotoDetail(photoId) {
         axios
-          .get(`http://localhost:8080/api/community/${photoId}`)
+          .get(`${process.env.VUE_APP_BACKEND_URL}/api/community/${photoId}`)
           .then((response) => {
             this.photoDetail = response.data;
   
             // 좋아요 수 불러오기
             axios
-              .get(`http://localhost:8080/api/like/${photoId}`)
+              .get(`${process.env.VUE_APP_BACKEND_URL}/api/like/${photoId}`)
               .then((res) => {
                 this.likesCount = res.data;
               })
@@ -89,7 +89,7 @@
             const userId = localStorage.getItem('userId');
             if (userId) {
               axios
-                .get(`http://localhost:8080/api/like/${photoId}/is-liked`, {
+                .get(`${process.env.VUE_APP_BACKEND_URL}/api/like/${photoId}/is-liked`, {
                   params: { userId },
                 })
                 .then((res) => {
@@ -111,7 +111,7 @@
       // 댓글 불러오기
       fetchComments(photoId) {
         axios
-          .get(`http://localhost:8080/api/comments/${photoId}`)
+          .get(`${process.env.VUE_APP_BACKEND_URL}/api/comments/${photoId}`)
           .then((response) => {
             console.log('Fetched comments data:', response.data);
   
@@ -146,7 +146,7 @@
         };
   
         axios
-          .post('http://localhost:8080/api/comments', comment)
+          .post(`${process.env.VUE_APP_BACKEND_URL}/api/comments`, comment)
           .then(() => {
             this.fetchComments(this.$route.params.photoId); // 새로 댓글 목록 가져오기
             this.newComment = ''; // 입력 필드 초기화
@@ -170,7 +170,7 @@
         }
   
         axios
-          .post(`http://localhost:8080/api/like/${this.$route.params.photoId}?userId=${userId}`)
+          .post(`${process.env.VUE_APP_BACKEND_URL}/api/like/${this.$route.params.photoId}?userId=${userId}`)
           .then(() => {
             if (this.isLiked) {
               this.likesCount -= 1;
