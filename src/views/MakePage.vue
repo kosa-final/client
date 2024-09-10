@@ -18,7 +18,7 @@
     </div>
     <div class="center">
       <p class="middleTitle">프레임 선택하기</p>
-      <p>색상별</p>
+      <p class="frameText">Classic</p>
       <div class="frame-options">
         <div v-for="(frame, index) in currentFrames" :key="index" class="frame-option">
           <img 
@@ -30,7 +30,7 @@
           />
         </div>
       </div>
-      <p>패턴별</p>
+      <p class="frameText">Pattern</p>
       <div class="frame-options">
         <div v-for="(frame, index) in currentPatternFrames" :key="index" class="frame-option">
           <img 
@@ -216,5 +216,12 @@ export default {
 .selected-frame {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
   transition: transform 0.2s;
+}
+.frameText{
+  font-size: bold;
+  color:#675C5C;
+}
+.btn-large{
+  font-size: 20px;
 }
 </style>
