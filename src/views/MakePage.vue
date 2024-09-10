@@ -57,7 +57,8 @@ export default {
   name: "MakePage",
   data() {
     return {
-      userId: Math.floor(Math.random() * 100),
+      // userId: Math.floor(Math.random() * 100),
+      userId: sessionStorage.getItem('userId'),
       roomName: "",
       roomSession: "",
       userCount: 1,
@@ -140,6 +141,9 @@ export default {
     currentPatternFrames() {
       return this.frames_pattern[this.userCount] || [];
     }
+  },
+  mounted() {
+  console.log("userId:", this.userId);
   },
   methods: {
     setUserCount(count) {
