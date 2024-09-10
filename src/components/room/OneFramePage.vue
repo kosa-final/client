@@ -26,7 +26,7 @@
           <p>2. 인원이 다 차면 자동으로 촬영 버튼이 활성화됩니다</p>
           <p>3. 사진 촬영은 방장만 가능합니다</p>
         </div>
-          <button class="btn-rounded" @click="capturePhotoOrigin" :disabled="!isCaptureButtonEnabled || hasCapturedPhoto">
+          <button class="btn-rounded" @click="capturePhotoOrigin">
             사진촬영
           </button>
       </div>
@@ -231,16 +231,7 @@ export default {
       });
     },
 
-    updateCaptureButtonState() {
-      this.isCaptureButtonEnabled = this.subscribers.length >= 3;
-    },
-
     async capturePhotoOrigin() {
-      if (!this.isHost) {
-        alert("방장만 사진을 촬영할 수 있습니다");
-        return;
-      }
-
       const element = this.$refs.photoOrigin;
 
       try {
