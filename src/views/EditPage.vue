@@ -82,6 +82,12 @@ export default {
     };
   },
   created() {
+    this.canvas.width = this.canvasWidth;
+this.canvas.height = this.canvasHeight;
+
+    console.log(this.$route.query.canvasWidth);  // 전달된 값 확인
+console.log(this.$route.query.canvasHeight);
+
     const storedNickname = localStorage.getItem('nickname');
     if (storedNickname) {
       this.localUserNickname = storedNickname;
