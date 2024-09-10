@@ -35,15 +35,17 @@ export default {
   },
   mounted() {
     axios
-      .get(`${process.VUE_APP_BACKEND_URL}/photo/hot`)
+      .get(`${process.env.VUE_APP_BACKEND_URL}/photo/hot`)
       .then((response) => {
         this.photos = response.data
           .map((photo) => photo.completePhoto)
           .filter((photo) => photo !== null);
+          console.log(response.data);
       })
       .catch((error) => {
         console.error('Error fetching photos:', error);
       });
+      
   },
   computed: {
     totalSlides() {

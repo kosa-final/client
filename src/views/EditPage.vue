@@ -26,11 +26,12 @@
 
           <!-- 순서 넘기기 버튼, 마지막 차례가 아닌 경우에만 표시 -->
           <button v-if="isMyTurn && !isLastTurn" @click="passTurn" class="btn-rounded turnbtn">순서 넘기기</button>
-
-          <!-- 마지막 차례일 때 사진 전송하기 버튼 표시 -->
-          <button v-if="isMyTurn && isLastTurn" class="btn-large" @click="saveCanvas">{{isHost}}사진 전송하기</button>
         </div>
     </div>
+        <div class="center">
+          <!-- 마지막 차례일 때 사진 전송하기 버튼 표시 -->
+          <button v-if="isMyTurn && isLastTurn" class="btn-large" @click="saveCanvas">사진 전송하기</button>
+        </div>
   </div>
 </template>
 
@@ -463,6 +464,7 @@ dropSticker(event) {
   justify-content: center;
   align-items: flex-start;
   flex-grow: 1;
+  margin-top: 20px;
 }
 
 .canvas-container {

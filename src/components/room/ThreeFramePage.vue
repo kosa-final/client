@@ -25,23 +25,19 @@
         </div>
       </div>
       <div class="right-panel">
-        <div id="session-header">
+        <div>
           <p class="middleTitle">방 이름</p>
-          <p>{{ roomInfo.roomName }}</p>
+          <p class="output">{{ roomInfo.roomName }}({{ userRole }})</p>
           <p class="middleTitle">초대코드</p>
-          <p>{{ roomSession }}</p>
-          <p class="middleTitle">회원유형</p>
-          <p>{{ userRole }}</p>
+          <p class="output">{{ roomSession }}</p>
           <p class="middleTitle">안내사항</p>
           <p>1. 입장 순서대로 프레임이 선정됩니다</p>
           <p>2. 인원이 다 차면 자동으로 촬영 버튼이 활성화됩니다</p>
-          <p>3. 인원이 다 차고 30초 이내에 사진을 찍어야 합니다</p>
-          <p>4. 30초 이내에 사진을 못 찍을 경우 자동으로 사진이 찍힙니다</p>
-          <p>5. 사진 촬영은 방장만 가능합니다</p>
+          <p>3. 사진 촬영은 방장만 가능합니다</p>
+        </div>
           <button class="btn-rounded" @click="capturePhotoOrigin" :disabled="!isCaptureButtonEnabled || hasCapturedPhoto">
             사진촬영
           </button>
-        </div>
       </div>
     </div>
     <div class="center">
@@ -312,25 +308,29 @@ leaveSession() {
 .main-container {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: auto;
   display: flex;
   flex-direction: column;
 }
 
 .container {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: flex-start;
   flex-grow: 1;
   margin-top: 20px;
+  height: 1200px;
 }
 
 .video-container {
-  width: 70%;
+  margin-right: 180px;
+  margin-top: 30px;
 }
 
 .controls-container {
-  width: 30%;
+  width: 300px; 
+  height: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -353,7 +353,7 @@ leaveSession() {
 .frame-image {
   position: absolute;
   width: 100%;
-  height: 100%;
+  height: auto;
   z-index: 2; /* 프레임을 최상단에 위치 */
 }
 
@@ -376,6 +376,14 @@ leaveSession() {
   padding: 0;
   transform: scaleX(-1); /* 좌우반전 */
  }
+
+ .right-panel {
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
 .modal {
   position: fixed;
