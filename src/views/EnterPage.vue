@@ -22,9 +22,12 @@ export default {
   name: "EnterPage",
   data() {
     return {
-      userId: Math.floor(Math.random() * 100),
+      userId: localStorage.getItem("userId"),
       roomSession: "",
     };
+  },
+  mounted() {
+  console.log("userId:", this.userId);
   },
   methods: {
     async joinSession() {
