@@ -6,23 +6,33 @@
           <img :src="photoDetail.COMPLETE_PHOTO" alt="Detail Photo" class="photo-image" />
         </div>
         <div class="right-side">
-          <p class="middleTitle">{{ photoDetail.ROOM_NAME }}</p>
-          <p class="smallTitle">{{ formatDate(photoDetail.CREATED_AT) }}</p>
+            <p class="smallTitle">{{ formatDate(photoDetail.CREATED_AT) }}</p>
+            <div class="title-like-container">
+                <p class="middleTitle">{{ photoDetail.ROOM_NAME }}</p>
+                <div class="like-section">
+                <button @click="toggleLike">
+                    <img 
+                        :src="isLiked ? filledHeart : emptyHeart" 
+                        alt="Like Heart" 
+                        class="like-heart-image"
+                    />
+                </button>
+                <span class="like-count">{{ likesCount }}</span>
+                </div>
+            </div>
+
           <p>{{ photoDetail.NOTE || '메모가 없습니다.' }}</p>
-          <div class="like-section">
-            <button @click="toggleLike" :class="{ liked: isLiked }">
-              <span v-if="isLiked">♥</span>
-              <span v-else>♡</span>
-            </button>
-            <span class="like-count">{{ likesCount }}</span>
-          </div>
+
+        <!-- 구분선 추가 -->
+        <hr class="divider" />
+        
   
           <!-- 댓글 섹션 -->
           <div class="comment-section">
             <div class="comment-header">
               <p class="middleTitle">댓글</p>
               <!-- 더보기/접기 버튼 (드롭다운 형식) -->
-              <button v-if="comments.length > 5" @click="toggleComments" class="dropdown-toggle">
+              <button @click="toggleComments" class="dropdown-toggle">
                 <span v-if="showAllComments">▲</span>
                 <span v-else>▼</span>
               </button>
@@ -30,14 +40,14 @@
             <ul class="comment-list">
               <li v-for="comment in visibleComments" :key="comment.commentId" class="comment-item">
                 <div class="comment-content">
-                  <p><strong>{{ comment.nickname }}</strong></p>
+                  <p class="nickName"><strong>{{ comment.nickname }}</strong></p>
                   <p>{{ comment.content }}</p>
                 </div>
-                <p class="smallTitle">{{ formatDate(comment.createdAt) }}</p>
+                <p class="comment-date">{{ formatDate(comment.createdAt) }}</p>
               </li>
             </ul>
   
-            <textarea v-model="newComment" placeholder="댓글을 입력하세요"></textarea>
+            <textarea v-model="newComment" placeholder="댓글을 입력하세요."></textarea>
             <div class="right">
               <button @click="addComment">등록</button>
             </div>
@@ -50,6 +60,8 @@
   
   <script>
   import axios from 'axios';
+  import emptyHeart from '@/assets/empty_heart.png';
+  import filledHeart from '@/assets/filled_heart.png';
   
   export default {
     data() {
@@ -59,26 +71,27 @@
         likesCount: 0, // 좋아요 개수
         comments: [], // 댓글 목록
         newComment: '', // 새 댓글
-        showAllComments: false, // 댓글을 모두 보여줄지 여부
+        showAllComments: true, // 기본값을 true로 설정하여 드롭다운이 처음에 펴진 상태로 시작
+        filledHeart,
+        emptyHeart,
       };
     },
     computed: {
-      visibleComments() {
-        // 댓글을 5개만 보여주고, showAllComments가 true이면 모든 댓글을 보여줌
-        return this.showAllComments ? this.comments : this.comments.slice(0, 5);
-      },
+        visibleComments() {
+            return this.showAllComments ? this.comments : [];
+        },
     },
     methods: {
       // 사진 상세 정보 및 좋아요 상태 불러오기
       fetchPhotoDetail(photoId) {
         axios
-          .get(`${process.env.VUE_APP_BACKEND_URL}/api/community/${photoId}`)
+          .get(`http://localhost:8080/api/community/${photoId}`)
           .then((response) => {
             this.photoDetail = response.data;
   
             // 좋아요 수 불러오기
             axios
-              .get(`${process.env.VUE_APP_BACKEND_URL}/api/like/${photoId}`)
+              .get(`http://localhost:8080/api/like/${photoId}`)
               .then((res) => {
                 this.likesCount = res.data;
               })
@@ -89,7 +102,7 @@
             const userId = localStorage.getItem('userId');
             if (userId) {
               axios
-                .get(`${process.env.VUE_APP_BACKEND_URL}/api/like/${photoId}/is-liked`, {
+                .get(`http://localhost:8080/api/like/${photoId}/is-liked`, {
                   params: { userId },
                 })
                 .then((res) => {
@@ -111,7 +124,7 @@
       // 댓글 불러오기
       fetchComments(photoId) {
         axios
-          .get(`${process.env.VUE_APP_BACKEND_URL}/api/comments/${photoId}`)
+          .get(`http://localhost:8080/api/comments/${photoId}`)
           .then((response) => {
             console.log('Fetched comments data:', response.data);
   
@@ -146,7 +159,7 @@
         };
   
         axios
-          .post(`${process.env.VUE_APP_BACKEND_URL}/api/comments`, comment)
+          .post('http://localhost:8080/api/comments', comment)
           .then(() => {
             this.fetchComments(this.$route.params.photoId); // 새로 댓글 목록 가져오기
             this.newComment = ''; // 입력 필드 초기화
@@ -170,7 +183,7 @@
         }
   
         axios
-          .post(`${process.env.VUE_APP_BACKEND_URL}/api/like/${this.$route.params.photoId}?userId=${userId}`)
+          .post(`http://localhost:8080/api/like/${this.$route.params.photoId}?userId=${userId}`)
           .then(() => {
             if (this.isLiked) {
               this.likesCount -= 1;
@@ -255,32 +268,44 @@
   margin: 30px;
 }
 
-.middleTitle {
-	text-align: left;
-  margin: 0;
+.title-like-container {
+  display: flex;
+  justify-content: space-between; /* 방 이름과 좋아요 버튼을 양쪽에 배치 */
+  align-items: center; /* 수직 중앙 정렬 */
 }
 
 .like-section {
   display: flex;
-  align-items: center;
-  margin-bottom: 20px;
+  align-items: center; /* 수직 중앙 정렬 */
+  margin-right: 15px;
+}
+
+.middleTitle {
+	text-align: left;
+    margin: 0;
+    font-size: 25px;
+}
+
+.smallTitle {
+    font-size: 20px;
+    color: #db574d;
 }
 
 button {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 18px;
   color: #db574d;
 }
 
 button.liked {
   color: red;
-  font-size: 20px;
+  font-size: 24px;
 }
 
 .like-count {
-  font-size: 16px;
+  font-size: 20px;
   margin-left: 10px;
 }
 
@@ -292,6 +317,7 @@ button.liked {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 20px;
   margin-bottom: 10px;
 }
 
@@ -309,12 +335,17 @@ button.liked {
   padding: 5px 0;
 }
 
+.nickName {
+    font-size: 20px;
+}
+
 .comment-content {
   flex: 1;
+  font-size: 16px;
 }
 
 .comment-date {
-  font-size: 0.9em;
+  font-size: 16px;
   color: #666;
 }
 
@@ -338,6 +369,18 @@ textarea {
 
 .right {
   text-align: right;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #bcbcbc; /* 선의 색상과 두께 설정 */
+  margin: 20px 0; /* 구분선의 위아래 간격 설정 */
+}
+
+.like-heart-image {
+  width: 20px; /* 하트 아이콘 크기 */
+  height: 18px;
+  cursor: pointer;
 }
 </style>
   

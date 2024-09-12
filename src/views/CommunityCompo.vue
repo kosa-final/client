@@ -20,11 +20,14 @@
             />
             <!-- 좋아요 표시 및 좋아요 토글 -->
             <div class="like-count-overlay">
-              <button @click.stop="toggleLike(photo)" :class="{ liked: isLiked(photo.PHOTO_ID) }">
-                <span v-if="isLiked(photo.PHOTO_ID)">♥</span>
-                <span v-else>♡</span>
-              </button>
-              <span class="like-count">{{ photo.likesCount }}</span>
+            <button @click.stop="toggleLike(photo)">
+                <img 
+                :src="isLiked(photo.PHOTO_ID) ? filledHeart : emptyHeart" 
+                alt="Like Heart" 
+                class="like-heart-image"
+                />
+            </button>
+            <span class="like-count">{{ photo.likesCount }}</span>
             </div>
           </div>
           <p>{{ photo.room_name }}</p>
@@ -50,6 +53,8 @@
   <script>
   import { mapGetters, mapActions } from "vuex";
   import axios from "axios";
+  import emptyHeart from '@/assets/red_empty_heart.png';
+  import filledHeart from '@/assets/filled_heart.png';
   
   export default {
     data() {
@@ -59,6 +64,8 @@
         currentPage: 1, // 현재 페이지
         photosPerPage: 12, // 페이지당 사진 개수
         totalPhotos: 0, // 총 사진 개수
+        filledHeart, // 채워진 하트 이미지
+        emptyHeart, // 빈 하트 이미지
       };
     },
     watch: {
@@ -329,6 +336,12 @@ button.liked {
 .like-count {
   margin-left: 5px;
   font-size: 16px;
+}
+
+.like-heart-image {
+  width: 18px; /* 하트 아이콘 크기 */
+  height: 16px;
+  cursor: pointer;
 }
 </style>
   
