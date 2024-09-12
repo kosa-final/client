@@ -57,7 +57,8 @@ export default {
   name: "MakePage",
   data() {
     return {
-      userId: localStorage.getItem("userId"),
+      userId: Math.floor(Math.random() *100),
+      // userId: localStorage.getItem("userId"),
       roomName: "",
       roomSession: "",
       userCount: 1,
@@ -142,7 +143,7 @@ export default {
     }
   },
   mounted() {
-  console.log("userId:", this.userId);
+    console.log("userId:", this.userId);
   },
   methods: {
     setUserCount(count) {
@@ -152,6 +153,8 @@ export default {
       this.selectedFrame = frame.name;
     },
     async joinSession() {
+      console.log("roomName:", this.roomName);
+      
       if (this.roomName) {
         this.roomSession = uuidv4();
 
