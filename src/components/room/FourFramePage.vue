@@ -28,7 +28,7 @@
         <div>
           <p class="middleTitle">방 이름</p>
           <p class="output">{{ roomInfo.roomName }}({{ userRole }})</p>
-          <p class="middleTitle">초대코드</p>
+          <p class="middleTitle">초대코드</p> <button class="copy-btn" @click="copyRoomSession">복사</button>
           <p class="output">{{ roomSession }}</p>
           <p class="middleTitle">안내사항</p>
           <p>1. 입장 순서대로 프레임이 선정됩니다</p>
@@ -98,6 +98,19 @@ export default {
     },
   },
   methods: {
+    copyRoomSession() {
+      if (!this.roomSession) {
+        alert('복사할 방 코드가 없습니다.');
+        return;
+      }
+
+      // 클립보드에 방 코드 복사
+      navigator.clipboard.writeText(this.roomSession).then(() => {
+        alert('방 코드가 복사되었습니다.');
+      }).catch(err => {
+        console.error('복사에 실패했습니다:', err);
+      });
+    },
     setFrameImageUrl() {
       this.frameImageUrl = require(`@/assets/frame/${this.selectedFrame}.png`);
     },
@@ -105,6 +118,19 @@ export default {
     joinSession() {
       this.OV = new OpenVidu();
       this.session = this.OV.initSession();
+
+     // MOVE_TO_EDIT 신호 수신
+    this.session.on('signal:move-to-edit', () => {
+        console.log("MOVE_TO_EDIT 신호 수신");
+        this.$router.push({
+            path: `/edit/${this.roomSession}`,
+            query: {
+                roomSession: this.roomSession,
+                userId: this.userId,
+                isHost: this.isHost.toString()  // 방장 여부를 전달
+            }
+        });
+    });
 
       // 사진 공유 신호 수신
       this.session.on('signal:photo-shared', event => {
@@ -165,7 +191,26 @@ export default {
       window.addEventListener("beforeunload", this.leaveSession);
     },
     leaveSession() {
-    if (this.session) this.session.disconnect();
+    if (this.session) {
+        // 방장이 leaveSession 버튼을 클릭했을 때 신호 전송
+        if (this.isHost) {
+            this.session.signal({
+                data: 'MOVE_TO_EDIT',  // 신호 데이터
+                to: [],                // 모든 참가자에게 신호 전송
+                type: 'move-to-edit',   // 신호 타입 설정
+            })
+            .then(() => {
+                console.log('MOVE_TO_EDIT 신호 전송 성공');
+            })
+            .catch((error) => {
+                console.error('MOVE_TO_EDIT 신호 전송 실패:', error);
+            });
+        }
+
+        // 세션 종료
+        this.session.disconnect();
+    }
+
     this.session = undefined;
     this.mainStreamManager = undefined;
     this.publisher = undefined;
@@ -173,16 +218,16 @@ export default {
     this.OV = undefined;
     window.removeEventListener("beforeunload", this.leaveSession);
 
+    // 방장이 아닌 경우 바로 Edit 페이지로 이동
     this.$router.push({
-      path: `/edit/${this.roomSession}`,
-      query: {
-        roomSession: this.roomSession,
-        userId: this.userId,
-        isHost: this.isHost.toString()  // boolean 값을 문자열로 변환하여 전달
-      }
+        path: `/edit/${this.roomSession}`,
+        query: {
+            roomSession: this.roomSession,
+            userId: this.userId,
+            isHost: this.isHost.toString()  // 방장 여부를 전달
+        }
     });
-  },
-
+},
     showLeaveModal() {
       this.isLeaveModalVisible = true;
     },
