@@ -1,10 +1,10 @@
 <template>
   <div>
     <div class="largeTitle">MAKE A ROOM</div>
-    <!-- <div class="center">
+    <div class="center">
       <p class="middleTitle">참여자</p>
       <input v-model="userId" class="form-control" type="text" required />
-    </div> -->
+    </div>
     <div class="center">
       <p class="middleTitle">방 이름 입력하기</p>
       <input v-model="roomName" class="form-control" type="text" required />
