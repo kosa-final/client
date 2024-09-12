@@ -22,8 +22,8 @@ export default {
   name: "EnterPage",
   data() {
     return {
-      userId: Math.floor(Math.random() *100),
-      // userId: localStorage.getItem("userId"),
+      userId: Math.floor(Math.random()*100),
+      //userId: localStorage.getItem("userId"),
       roomSession: "",
     };
   },

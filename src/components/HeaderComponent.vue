@@ -57,7 +57,7 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 35px;
+  margin: 20px;
 }
 
 .left-section {
@@ -74,7 +74,7 @@ nav {
   text-decoration: none;
   color: #DB574D;
   font-weight: 500;
-  font-size: 28px;
+  font-size: 23px;
   position: relative;
   display: inline-block;
 }
@@ -97,7 +97,7 @@ nav {
 }
 
 .logo {
-  font-size: 36px;
+  font-size: 32px;
   text-decoration: none;
   color: black;
 }

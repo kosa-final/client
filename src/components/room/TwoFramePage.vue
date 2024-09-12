@@ -64,7 +64,7 @@ import html2canvas from "html2canvas";
 
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
-const APPLICATION_SERVER_URL = "https://4cutstudio.store/";
+const APPLICATION_SERVER_URL = "https:///";
 
 export default {
   name: "FourFramePage",
