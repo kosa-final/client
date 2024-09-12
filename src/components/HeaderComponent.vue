@@ -9,7 +9,7 @@
         </div>
       </div>
       <div class="right-section">
-        <button v-if="isLoggedIn" @click="logoutUser" class="btn">LOGOUT</button>
+        <button v-if="isLoggedIn" @click="logoutUser" class="btn logout">LOGOUT</button>
         <router-link v-if="isLoggedIn" to="/mypage">
           <button class="btn">MY PAGE</button>
         </router-link>
@@ -57,7 +57,7 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 20px;
+  margin: 35px;
 }
 
 .left-section {
@@ -66,17 +66,38 @@ nav {
 }
 
 .menu {
-  margin-left: 20px;
+  margin-left: 32px;
 }
 
 .menu a {
-  margin-right: 15px;
+  margin-right: 20px;
   text-decoration: none;
   color: #DB574D;
+  font-weight: 500;
+  font-size: 28px;
+  position: relative;
+  display: inline-block;
+}
+.menu a::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  bottom: 0;
+  left: 0;
+  background-color: #DB574D;
+  visibility: hidden;
+  transform: scaleX(0);
+  transition: all 0.3s ease-in-out;
+}
+
+.menu a:hover::after {
+  visibility: visible;
+  transform: scaleX(1);
 }
 
 .logo {
-  font-size: 24px;
+  font-size: 36px;
   text-decoration: none;
   color: black;
 }
@@ -87,6 +108,25 @@ nav {
 }
 
 .btn {
-	margin: 0 5px;
+  margin: 0 15px;
+  font-size: 20px;
+  padding: 11px 25px; /* 상하 10px, 좌우 20px */
 }
+
+.logout {
+  color: #DB574D; /* 글자 색상 */
+  background-color: white; /* 배경색 흰색 */
+  border: 1px solid #DB574D; /* 테두리 색상과 굵기 */
+}
+
+.logout:hover {
+  background-color: #DB574D; /* 마우스 오버 시 배경색 변경 */
+  color: white; /* 마우스 오버 시 글자 색상 변경 */
+}
+
+.btn:not(.logout):hover {
+  background-color: white; /* 일반 버튼의 마우스 오버 시 배경색 변경 */
+  color: #DB574D; /* 일반 버튼의 마우스 오버 시 글자 색상 변경 */
+}
+
 </style>
