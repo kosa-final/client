@@ -367,11 +367,8 @@ undoLast() {
       imageUrl: response.data
     }));
 
-    const currentRoute = this.$route.fullPath;
-    const targetRoute = `/save/${this.roomSession}`;
-
-    // 중복된 경로로 이동하지 않도록 처리
-    if (currentRoute !== targetRoute) {
+    if (this.isHost) {
+      // 방장일 경우, SavePage.vue로 이동
       this.$router.push({
         name: 'Save',
         params: { 
@@ -380,13 +377,18 @@ undoLast() {
           userId: this.userId 
         }
       });
+    } else {
+      // 방장이 아닐 경우, 사진 저장 알림창 띄우기
+      const confirmResult = confirm('사진을 저장하였습니다. 메인 페이지로 이동하시겠습니까?');
+      if (confirmResult) {
+        this.$router.push({ name: 'MainPage' }); // 메인 페이지로 이동
+      }
     }
     
   } catch (error) {
     console.error('Error uploading image to S3:', error.response ? error.response.data : error.message);
   }
 },
-
     dragStart(event) {
       this.draggingSticker = event.target;
     },
