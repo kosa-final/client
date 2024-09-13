@@ -18,7 +18,7 @@
           <label for="confirmPassword">비밀번호 확인:</label>
           <input type="password" id="confirmPassword" v-model="confirmPassword" required />
         </div>
-        <button type="submit">회원가입</button>
+        <button type="submit" class="btn-large">회원가입</button>
       </form>
     </div>
   </template>
@@ -81,22 +81,5 @@
   </style>
   
   
-  <style scoped>
-  .register-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-  }
-  
-  form {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  button {
-    margin-top: 10px;
-  }
-  </style>
+
   
