@@ -169,7 +169,7 @@ export default {
 
     this.$router.push({
       path: `/edit/${this.roomSession}`,
-      params: {
+      query: {
         roomSession: this.roomSession,
         userId: this.userId,
         isHost: this.isHost.toString() ,

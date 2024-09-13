@@ -17,6 +17,9 @@ import MyPageCompo from '@/views/MyPageCompo.vue';
 import CommunityCompo from '@/views/CommunityCompo.vue';
 import PictureDetail from '@/views/PictureDetail.vue'; 
 
+import RegisterCompo from '@/views/RegisterCompo.vue'; 
+import GeneralLoginCompo from '../views/GeneralLoginCompo.vue';
+
 Vue.use(Router);
 
 export default new Router({
@@ -92,6 +95,13 @@ export default new Router({
       name: 'PictureDetail',
       component: PictureDetail,
       props: true,
-    }
+    },
+    { path: '/register', 
+      component: RegisterCompo
+    },
+
+    { path: '/generallogin', 
+      component: GeneralLoginCompo
+    },
   ]
 });

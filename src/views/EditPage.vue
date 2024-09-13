@@ -390,9 +390,6 @@ undoLast() {
         console.error('Error uploading image to server:', error.response ? error.response.data : error.message);
     }
 },
-
-
-
     dragStart(event) {
       this.draggingSticker = event.target;
     },
