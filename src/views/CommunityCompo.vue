@@ -20,14 +20,14 @@
             />
             <!-- 좋아요 표시 및 좋아요 토글 -->
             <div class="like-count-overlay">
-            <button @click.stop="toggleLike(photo)">
+              <button @click.stop="toggleLike(photo)">
                 <img 
-                :src="isLiked(photo.PHOTO_ID) ? filledHeart : emptyHeart" 
-                alt="Like Heart" 
-                class="like-heart-image"
+                  :src="isLiked(photo.PHOTO_ID) ? filledHeart : emptyHeart" 
+                  alt="Like Heart" 
+                  class="like-heart-image"
                 />
-            </button>
-            <span class="like-count">{{ photo.likesCount }}</span>
+              </button>
+              <span class="like-count">{{ photo.likesCount }}</span>
             </div>
           </div>
           <p>{{ photo.room_name }}</p>
@@ -113,18 +113,16 @@
         }
   
         return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-      },
+      }
     },
     methods: {
       ...mapActions(["toggleLike", "fetchLikedPhotos"]),
   
       // 커뮤니티 사진 데이터 가져오기
       fetchCommunityPhotos() {
-        const userId = localStorage.getItem("userId");
-  
         axios
           .get(`${process.env.VUE_APP_BACKEND_URL}/api/community`, {
-            params: { userId, sortType: this.sortType }, // sortType 전달
+            params: { sortType: this.sortType }, // sortType 전달
           })
           .then((response) => {
             this.photos = response.data.map((photo) => ({
@@ -204,13 +202,14 @@
       },
     },
   
-    // 컴포넌트 마운트 시 사진 데이터를 불러오고, 좋아요 상태를 가져옴
+    // 컴포넌트 마운트 시 사진 데이터를 불러옴
     mounted() {
-      this.fetchCommunityPhotos();
-      this.$store.dispatch("fetchLikedPhotos");
+      this.fetchCommunityPhotos(); // 로그인 여부와 상관없이 커뮤니티 사진을 불러옴
+      this.$store.dispatch("fetchLikedPhotos"); // 좋아요 상태는 로그인한 유저에만 적용
     },
   };
   </script>
+  
   
   <style scoped>
   .community-container {
