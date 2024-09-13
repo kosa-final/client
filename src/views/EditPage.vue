@@ -30,7 +30,7 @@
     </div>
         <div class="center">
           <!-- 마지막 차례일 때 사진 전송하기 버튼 표시 -->
-          <button v-if="isMyTurn && isLastTurn" class="btn-large" @click="saveCanvas">사진 전송하기</button>
+          <button v-if="isMyTurn && isLastTurn" class="btn-large" @click="saveCanvas">{{this.isHost}}사진 전송하기</button>
         </div>
   </div>
 </template>
@@ -347,39 +347,45 @@ undoLast() {
     async saveCanvas() {
     const imageBase64 = this.canvas.toDataURL('image/png');
     const photoData = {
-      originPhoto: imageBase64,
-      roomId: this.roomInfo.roomId 
+        originPhoto: imageBase64,
+        roomId: this.roomInfo.roomId
     };
-  try {
-    const response = await axios.post(`${process.env.VUE_APP_BACKEND_URL}/photo/complete?roomSession=${this.roomSession}`, photoData, {
-      headers: { 'Content-Type': 'application/json' }
-    });
 
-    // 모든 사용자에게 페이지 이동 메시지 전송
-    this.webSocket.send(JSON.stringify({
-      type: 'PHOTO_SAVED',
-      imageUrl: response.data
-    }));
+    try {
+        const response = await axios.post(`${process.env.VUE_APP_BACKEND_URL}/photo/complete?roomSession=${this.roomSession}`, photoData, {
+            headers: { 'Content-Type': 'application/json' }
+        });
 
-    const currentRoute = this.$route.fullPath;
-    const targetRoute = `/save/${this.roomSession}`;
+        // WebSocket으로 모든 사용자에게 사진 전송 완료 메시지 전송
+        this.webSocket.send(JSON.stringify({
+            type: 'PHOTO_SAVED',
+            imageUrl: response.data
+        }));
 
-    // 중복된 경로로 이동하지 않도록 처리
-    if (currentRoute !== targetRoute) {
-      this.$router.push({
-        name: 'Save',
-        params: { 
-          roomSession: this.roomSession, 
-          imageUrl: encodeURIComponent(response.data), 
-          userId: this.userId 
+        // 방장인지 확인하여 페이지 이동 처리
+        if (this.isHost) {
+            // 방장인 경우 Save 페이지로 이동
+            this.$router.push({
+                name: 'Save',
+                params: {
+                    roomSession: this.roomSession,
+                    imageUrl: encodeURIComponent(response.data),
+                    userId: this.userId
+                }
+            });
+        } else {
+            // 일반 사용자일 경우 알림창 표시 후 메인 페이지로 이동
+            alert('사진이 완성되었습니다');
+            this.$router.push({
+                name: 'Home'  // 메인 페이지의 이름을 맞게 설정
+            });
         }
-      });
+    } catch (error) {
+        console.error('Error uploading image to server:', error.response ? error.response.data : error.message);
     }
-    
-  } catch (error) {
-    console.error('Error uploading image to S3:', error.response ? error.response.data : error.message);
-  }
 },
+
+
 
     dragStart(event) {
       this.draggingSticker = event.target;
