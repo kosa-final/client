@@ -184,7 +184,8 @@ leaveSession() {
       userId: this.userId,
       isHost: this.isHost.toString(),
       canvasWidth: 300,  // 캔버스 크기 전달
-      canvasHeight: 800  // 캔버스 높이 전달
+      canvasHeight: 800,  // 캔버스 높이 전달
+      photoImageUrl: this.photoImageUrl // 캡처된 사진 URL을 전달
     }
   });
 },

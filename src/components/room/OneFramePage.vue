@@ -169,17 +169,18 @@ export default {
 
     this.$router.push({
       path: `/edit/${this.roomSession}`,
-      query: {
+      params: {
         roomSession: this.roomSession,
         userId: this.userId,
         isHost: this.isHost.toString() ,
-        photoImageUrl: this.photoImageUrl // 캡처된 사진 URL을 전달
       }
     });
   },
 
     showLeaveModal() {
       this.isLeaveModalVisible = true;
+
+
     },
 
     hideLeaveModal() {
@@ -249,7 +250,7 @@ export default {
         const response = await axios.post(
           `${process.env.VUE_APP_BACKEND_URL}/photo/save`,
           { 
-            originPhoto: imageData,
+            originPhoto: this.photoImageUrl,
             roomId: this.roomInfo.roomId
           },
           {
