@@ -1,6 +1,6 @@
 <template>
   <div>
-    <component :is="currentComponent" :room-info="roomInfo" />
+    <component v-if="roomInfo && currentComponent" :is="currentComponent" :room-info="roomInfo" />
   </div>
 </template>
 
@@ -22,7 +22,7 @@ export default {
   },
   data() {
     return {
-      roomInfo: null,
+      roomInfo: {},
     };
   },
   created() {
@@ -46,7 +46,7 @@ export default {
   },
   methods: {
     async loadRoomInfo() {
-      if (!this.roomInfo) {
+      if (Object.keys(this.roomInfo).length === 0) { // 빈 객체일 때만 로드
         try {
           const response = await axios.get(`${process.env.VUE_APP_BACKEND_URL}/room/info`, {
             params: {
@@ -63,7 +63,7 @@ export default {
           console.error("Error loading room info:", error);
         }
       }
-    },
+    }
   },
 };
 </script>
