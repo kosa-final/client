@@ -56,118 +56,121 @@
 import axios from 'axios';
 
 export default {
-data() {
-  return {
-    showConfirmModal: false,
-    showCompletionModal: false,
-    photos: [], // 사진 목록을 저장할 배열
-    currentPage: 1, // 현재 페이지
-    photosPerPage: 5, // 페이지당 사진 수
-  };
-},
-computed: {
-  userInfo() {
-    return this.$store.state.userInfo;
+  data() {
+    return {
+      showConfirmModal: false,
+      showCompletionModal: false,
+      photos: [], // 사진 목록을 저장할 배열
+      currentPage: 1, // 현재 페이지
+      photosPerPage: 5, // 페이지당 사진 수
+    };
   },
-  accessToken() {
-    return this.$store.state.accessToken;
-  },
-  totalPages() {
-    return Math.ceil(this.photos.length / this.photosPerPage);
-  },
-  paginatedPhotos() {
-    const start = (this.currentPage - 1) * this.photosPerPage;
-    const end = start + this.photosPerPage;
-    return this.photos.slice(start, end); // 현재 페이지에 맞는 사진들을 반환
-  },
-  paginationRange() {
-    const rangeSize = 5;
-    let start = Math.max(this.currentPage - Math.floor(rangeSize / 2), 1);
-    let end = Math.min(start + rangeSize - 1, this.totalPages);
+  computed: {
+    userInfo() {
+      return this.$store.state.userInfo;
+    },
+    userId() {
+      return this.$store.state.userId; // userId를 사용해 로그인 여부 확인
+    },
+    totalPages() {
+      return Math.ceil(this.photos.length / this.photosPerPage);
+    },
+    paginatedPhotos() {
+      const start = (this.currentPage - 1) * this.photosPerPage;
+      const end = start + this.photosPerPage;
+      return this.photos.slice(start, end); // 현재 페이지에 맞는 사진들을 반환
+    },
+    paginationRange() {
+      const rangeSize = 5;
+      let start = Math.max(this.currentPage - Math.floor(rangeSize / 2), 1);
+      let end = Math.min(start + rangeSize - 1, this.totalPages);
 
-    if (end - start < rangeSize - 1) {
-      start = Math.max(end - rangeSize + 1, 1);
+      if (end - start < rangeSize - 1) {
+        start = Math.max(end - rangeSize + 1, 1);
+      }
+
+      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     }
+  },
+  methods: {
+    fetchUserPhotos() {
+      const userId = localStorage.getItem('userId'); // 로컬 스토리지에서 userId 가져오기
 
-    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-  }
-},
-methods: {
-  fetchUserPhotos() {
-    const userId = localStorage.getItem('userId'); // 로컬 스토리지에서 userId 가져오기
+      if (!userId) {
+        console.error('UserId가 없습니다. 로그인이 필요합니다.');
+        this.$router.push('/login');
+        return;
+      }
+
+      axios.get(`${process.env.VUE_APP_BACKEND_URL}/api/photolist`, {
+        params: {
+          userId: userId // userId를 쿼리 파라미터로 추가
+        },
+        withCredentials: true // 쿠키를 포함한 요청을 위해 withCredentials 설정
+      })
+      .then(response => {
+        this.photos = response.data; // 서버에서 받은 사진 데이터를 저장
+      })
+      .catch(error => {
+        console.error('사진 목록 불러오기 실패:', error);
+      });
+    },
+    formatDate(dateString) {
+      if (!dateString) {
+        return 'N/A';
+      }
+
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'N/A';
+      }
+
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+
+      return `${year}-${month}-${day}`; // YYYY-MM-DD 형식으로 반환
+    },
+    changePage(page) {
+      if (page > 0 && page <= this.totalPages) {
+        this.currentPage = page;
+      }
+    },
+    goToDetail(photoId) {
+      this.$router.push({ name: 'PictureDetail', params: { photoId } }); // 사진의 상세 페이지로 이동
+    },
+    confirmDelete() {
+      axios.post(`${process.env.VUE_APP_BACKEND_URL}/api/kakao/deactivate`, {}, {
+        withCredentials: true
+      })
+      .then(() => {
+        this.showConfirmModal = false;
+        this.showCompletionModal = true;
+        this.$store.commit('logout');
+
+        setTimeout(() => {
+          this.$router.push('/');
+        }, 2000);
+      })
+      .catch(error => {
+        console.error('회원 탈퇴 실패:', error);
+        alert("회원 탈퇴 중 오류가 발생했습니다.");
+      });
+    }
+  },
+  mounted() {
+    const userId = localStorage.getItem('userId'); // 로그인 여부 확인
 
     if (!userId) {
-      console.error('UserId가 없습니다. 로그인이 필요합니다.');
+      alert("로그인이 필요합니다.");
       this.$router.push('/login');
-      return;
+    } else {
+      this.fetchUserPhotos(); // 마운트 시 사용자 사진 데이터를 불러옴
     }
-
-    axios.get(`${process.env.VUE_APP_BACKEND_URL}/api/photolist`, {
-      params: {
-        userId: userId // userId를 쿼리 파라미터로 추가
-      },
-      withCredentials: true // 쿠키를 포함한 요청을 위해 withCredentials 설정
-    })
-    .then(response => {
-      this.photos = response.data; // 서버에서 받은 사진 데이터를 저장
-    })
-    .catch(error => {
-      console.error('사진 목록 불러오기 실패:', error);
-    });
-  },
-  formatDate(dateString) {
-    if (!dateString) {
-      return 'N/A';
-    }
-
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) {
-      return 'N/A';
-    }
-
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-
-    return `${year}-${month}-${day}`; // YYYY-MM-DD 형식으로 반환
-  },
-  changePage(page) {
-    if (page > 0 && page <= this.totalPages) {
-      this.currentPage = page;
-    }
-  },
-  goToDetail(photoId) {
-    this.$router.push({ name: 'PictureDetail', params: { photoId } }); // 사진의 상세 페이지로 이동
-  },
-  confirmDelete() {
-    axios.post(`${process.env.VUE_APP_BACKEND_URL}/api/kakao/deactivate`, {}, {
-      withCredentials: true
-    })
-    .then(() => {
-      this.showConfirmModal = false;
-      this.showCompletionModal = true;
-      this.$store.commit('logout');
-
-      setTimeout(() => {
-        this.$router.push('/');
-      }, 2000);
-    })
-    .catch(error => {
-      console.error('회원 탈퇴 실패:', error);
-      alert("회원 탈퇴 중 오류가 발생했습니다.");
-    });
   }
-},
-mounted() {
-  if (!this.accessToken) {
-    alert("로그인이 필요합니다.");
-    this.$router.push('/login');
-  } else {
-    this.fetchUserPhotos(); // 마운트 시 사용자 사진 데이터를 불러옴
-  }
-}
 }
 </script>
+
 
 <style scoped>
 /* 스타일은 기존 그대로 유지 */
