@@ -7,7 +7,6 @@ import Make from '@/views/MakePage.vue';
 import Enter from '@/views/EnterPage.vue';
 import Room from '@/views/RoomPage.vue';
 import Edit from '@/views/EditPage.vue'; 
-import Edit2 from '@/views/EditPage2.vue'; 
 import Save from '@/views/SavePage.vue';
 
 import LoginCompo from '@/views/LoginCompo.vue'; 
@@ -52,12 +51,6 @@ export default new Router({
       path: '/edit/:roomSession',
       name: 'Edit',
       component: Edit,
-      props: true,
-    },
-    {
-      path: '/edit2/:roomSession',
-      name: 'Edit2',
-      component: Edit2,
       props: true,
     },
     {
