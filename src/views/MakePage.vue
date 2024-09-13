@@ -13,12 +13,11 @@
       <p class="middleTitle">방 인원 선택하기</p>
       <button @click="setUserCount(1)" :class="{'btn-selected': userCount === 1, 'btn-empty': userCount !== 1}">1명</button>
       <button @click="setUserCount(2)" :class="{'btn-selected': userCount === 2, 'btn-empty': userCount !== 2}">2명</button>
-      <button @click="setUserCount(3)" :class="{'btn-selected': userCount === 3, 'btn-empty': userCount !== 3}">3명</button>
       <button @click="setUserCount(4)" :class="{'btn-selected': userCount === 4, 'btn-empty': userCount !== 4}">4명</button>
     </div>
     <div class="center">
       <p class="middleTitle">프레임 선택하기</p>
-      <p class="frameText">Classic</p>
+      <p class="frameText">기본</p>
       <div class="frame-options">
         <div v-for="(frame, index) in currentFrames" :key="index" class="frame-option">
           <img 
@@ -30,7 +29,7 @@
           />
         </div>
       </div>
-      <p class="frameText">Pattern</p>
+      <p class="frameText">패턴</p>
       <div class="frame-options">
         <div v-for="(frame, index) in currentPatternFrames" :key="index" class="frame-option">
           <img 
@@ -79,14 +78,6 @@ export default {
           { name: '2frame_red', src: require('@/assets/frame/2frame_red.png') },
           { name: '2frame_white', src: require('@/assets/frame/2frame_white.png') },
         ],
-        3: [
-          { name: '3frame_black', src: require('@/assets/frame/3frame_black.png') },
-          { name: '3frame_blue', src: require('@/assets/frame/3frame_blue.png') },
-          { name: '3frame_green', src: require('@/assets/frame/3frame_green.png') },
-          { name: '3frame_purple', src: require('@/assets/frame/3frame_purple.png') },
-          { name: '3frame_red', src: require('@/assets/frame/3frame_red.png') },
-          { name: '3frame_white', src: require('@/assets/frame/3frame_white.png') },
-        ],
         4: [
           { name: '4frame_black', src: require('@/assets/frame/4frame_black.png') },
           { name: '4frame_blue', src: require('@/assets/frame/4frame_blue.png') },
@@ -112,14 +103,6 @@ export default {
           { name: '2frame_purple_pattern', src: require('@/assets/frame/2frame_purple_pattern.png') },
           { name: '2frame_red_pattern', src: require('@/assets/frame/2frame_red_pattern.png') },
           { name: '2frame_white_pattern', src: require('@/assets/frame/2frame_white_pattern.png') },
-        ],
-        3: [
-          { name: '3frame_black_pattern', src: require('@/assets/frame/3frame_black_pattern.png') },
-          { name: '3frame_blue_pattern', src: require('@/assets/frame/3frame_blue_pattern.png') },
-          { name: '3frame_green_pattern', src: require('@/assets/frame/3frame_green_pattern.png') },
-          { name: '3frame_purple_pattern', src: require('@/assets/frame/3frame_purple_pattern.png') },
-          { name: '3frame_red_pattern', src: require('@/assets/frame/3frame_red_pattern.png') },
-          { name: '3frame_white_pattern', src: require('@/assets/frame/3frame_white_pattern.png') },
         ],
         4: [
           { name: '4frame_black_pattern', src: require('@/assets/frame/4frame_black_pattern.png') },
