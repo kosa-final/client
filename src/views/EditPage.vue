@@ -30,7 +30,7 @@
     </div>
         <div class="center">
           <!-- 마지막 차례일 때 사진 전송하기 버튼 표시 -->
-          <button v-if="isMyTurn && isLastTurn" class="btn-large" @click="saveCanvas">{{this.isHost}}사진 전송하기</button>
+          <button v-if="isMyTurn && isLastTurn" class="btn-large" @click="saveCanvas">{{isHost}}사진 전송하기</button>
         </div>
   </div>
 </template>
@@ -153,7 +153,7 @@ export default {
         // PHOTO_SAVED 메시지 처리
         if (data.type === 'PHOTO_SAVED') {
           // 만약 현재 사용자가 사진 전송을 이미 한 사용자라면 이동하지 않도록 설정
-          if (this.userId !== data.userId) { 
+          if (this.isHost) { 
             console.log('PHOTO_SAVED 메시지 수신: ', data.imageUrl);
             this.$router.push({
               name: 'Save',
@@ -170,7 +170,13 @@ export default {
                 console.error(err);
               }
             });
-          }
+          } else {
+            // 일반 사용자일 경우 알림창 표시 후 메인 페이지로 이동
+            alert('사진이 완성되었습니다');
+            this.$router.push({
+                name: 'Home'  // 메인 페이지의 이름을 맞게 설정
+            });
+        }
 }
         if (data.type === 'TURN') {
         // Vue.set을 사용해 isMyTurn 상태를 동적으로 설정
@@ -362,24 +368,24 @@ undoLast() {
             imageUrl: response.data
         }));
 
-        // 방장인지 확인하여 페이지 이동 처리
-        if (this.isHost) {
-            // 방장인 경우 Save 페이지로 이동
-            this.$router.push({
-                name: 'Save',
-                params: {
-                    roomSession: this.roomSession,
-                    imageUrl: encodeURIComponent(response.data),
-                    userId: this.userId
-                }
-            });
-        } else {
-            // 일반 사용자일 경우 알림창 표시 후 메인 페이지로 이동
-            alert('사진이 완성되었습니다');
-            this.$router.push({
-                name: 'Home'  // 메인 페이지의 이름을 맞게 설정
-            });
-        }
+        // // 방장인지 확인하여 페이지 이동 처리
+        // if (this.host) {
+        //     // 방장인 경우 Save 페이지로 이동
+        //     this.$router.push({
+        //         name: 'Save',
+        //         params: {
+        //             roomSession: this.roomSession,
+        //             imageUrl: encodeURIComponent(response.data),
+        //             userId: this.userId
+        //         }
+        //     });
+        // } else {
+        //     // 일반 사용자일 경우 알림창 표시 후 메인 페이지로 이동
+        //     alert('사진이 완성되었습니다');
+        //     this.$router.push({
+        //         name: 'Home'  // 메인 페이지의 이름을 맞게 설정
+        //     });
+        // }
     } catch (error) {
         console.error('Error uploading image to server:', error.response ? error.response.data : error.message);
     }
