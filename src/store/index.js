@@ -7,21 +7,26 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     accessToken: localStorage.getItem('accessToken') || null,
+    userId: localStorage.getItem('userId') || null,  // userId를 state로 관리
     userInfo: {},
-    likedPhotos: {}, // 좋아요 상태 저장
-    comments: [], // 댓글 상태 저장
+    likedPhotos: {},  // 좋아요 상태 저장
+    comments: [],  // 댓글 상태 저장
   },
   mutations: {
     setAccessToken(state, token) {
       state.accessToken = token;
       localStorage.setItem('accessToken', token);
     },
+    setUserId(state, userId) {  // userId를 저장하는 mutation 추가
+      state.userId = userId;
+      localStorage.setItem('userId', userId);
+    },
     setUserInfo(state, userInfo) {
       state.userInfo = userInfo;
       const userId = userInfo.id || userInfo.userid || null;
       const nickname = userInfo.nickname || userInfo.properties?.nickname || null;
       if (userId) {
-        localStorage.setItem('userId', userId);
+        this.commit('setUserId', userId);  // userId 설정
       }
       if (nickname) {
         localStorage.setItem('nickname', nickname);
@@ -29,6 +34,7 @@ export default new Vuex.Store({
     },
     logout(state) {
       state.accessToken = null;
+      state.userId = null;  // 로그아웃 시 userId도 초기화
       state.userInfo = {};
       state.likedPhotos = {}; // 로그아웃 시 좋아요 상태 초기화
       localStorage.removeItem('accessToken');
