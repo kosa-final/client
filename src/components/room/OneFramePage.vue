@@ -172,7 +172,8 @@ export default {
       query: {
         roomSession: this.roomSession,
         userId: this.userId,
-        isHost: this.isHost.toString() 
+        isHost: this.isHost.toString() ,
+        photoImageUrl: this.photoImageUrl // 캡처된 사진 URL을 전달
       }
     });
   },

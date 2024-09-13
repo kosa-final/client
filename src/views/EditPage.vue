@@ -1,14 +1,14 @@
 <template>
   <div class="main-container">
-    <div class="largeTitle">DECORATING ROOM</div>
+    <div class="largeTitle">DECORATING ROOM</div>			  
     <div id="drawing-picture" class="drawing-container">
       <div class="canvas-container">
         <canvas ref="canvas"></canvas>
       </div>
       <div class="right-panel">
-          <p class="middleTitle">꾸미기 순서</p>
-            <div v-if="isMyTurn" class="output">{{ localUserNickname }}님의 차례입니다</div>
-            <div v-else class="output">{{ currentTurnNickname }}님의 차례입니다</div>
+        <p class="middleTitle">꾸미기 순서</p>
+        <div v-if="isMyTurn" class="output">{{ localUserNickname }}님의 차례입니다</div>
+        <div v-else class="output">{{ currentTurnNickname }}님의 차례입니다</div>
           <p class="middleTitle">펜 색상</p>
           <div class="color-tools">
             <div v-for="color in colors" :key="color" :style="{ backgroundColor: color }" class="color-field" @click="changeColor(color)"></div>
@@ -31,7 +31,7 @@
         <div class="center">
           <!-- 마지막 차례일 때 사진 전송하기 버튼 표시 -->
           <button v-if="isMyTurn && isLastTurn" class="btn-large" @click="saveCanvas">사진 전송하기</button>
-        </div>
+        </div>	  
   </div>
 </template>
 
@@ -75,33 +75,50 @@ export default {
       webSocket: null,
       isLastTurn: false,
       isMyTurn: false,  
-      currentTurnNickname: "",  
-      localUserNickname: '', 
+      currentTurnNickname: '',  // 현재 턴의 닉네임을 저장
+      localUserNickname: '',    // 로컬 스토리지에서 가져온 사용자 닉네임
       restoreArray: [],  // 캔버스 상태를 저장하는 배열
       index: -1,  // 현재 상태 배열의 인덱스 
       isHost: this.$route.params.isHost
     };
   },
   created() {
-    this.canvas.width = this.canvasWidth;
-this.canvas.height = this.canvasHeight;
+        // 로컬 스토리지에서 닉네임 가져오기
+        this.localUserNickname = localStorage.getItem('nickname') || '';
+    // 기타 초기화 작업
+    this.initializeWebSocket();
+  const photoUrl = this.$route.query.photoImageUrl;
+  if (photoUrl) {
+    console.log("Received photo URL:", photoUrl);
+    this.loadImageOntoCanvas(photoUrl); // 이미지 로드 후 캔버스에 그리기
+  } else {
+    console.error("Photo URL is not provided");
+  }
+},
 
-    console.log(this.$route.query.canvasWidth);  // 전달된 값 확인
-console.log(this.$route.query.canvasHeight);
-
-    const storedNickname = localStorage.getItem('nickname');
-    if (storedNickname) {
-      this.localUserNickname = storedNickname;
-      console.log('User Nickname from Local Storage: ', this.localUserNickname);
-    } else {
-      console.error('No userNickname found in local storage!');
-    }
-    this.isHost = this.$route.query.isHost === 'true'; 
-    this.fetchRoomInfo().then(() => {
-      this.initializeWebSocket();
-    });
-  },
   methods: {
+    async loadImageOntoCanvas(url) {
+    try {
+      const image = new Image();
+      image.crossOrigin = "Anonymous";
+      image.src = url;
+
+      image.onload = () => {
+        this.canvas = this.$refs.canvas;
+        this.context = this.canvas.getContext('2d');
+        this.canvas.width = this.canvasWidth;
+        this.canvas.height = this.canvasHeight;
+        this.context.drawImage(image, 0, 0, this.canvas.width, this.canvas.height);
+      };
+
+      image.onerror = () => {
+        console.error('Failed to load image from URL:', url);
+      };
+    } catch (error) {
+      console.error('Error loading image onto canvas:', error);
+    }				   
+  },
+			
     async fetchRoomInfo() {
       try {
         const response = await axios.get(`${process.env.VUE_APP_BACKEND_URL}/photo/info`, {
@@ -183,12 +200,7 @@ console.log(this.$route.query.canvasHeight);
         this.$set(this, 'isMyTurn', data.userId === this.userId);
         console.log('WebSocket TURN event: isMyTurn =', this.isMyTurn);
         this.currentTurnNickname = data.nickname;
-        this.isLastTurn = data.isLastTurn; // 마지막 차례 여부 업데이트
-
-        if (this.isMyTurn) {
-          alert('그림을 그려주세요!');
-          this.fixDrawing();
-        }
+        this.isLastTurn = data.isLastTurn; // 마지막 차례 여부 업데이트 
 
         // 상태가 변경된 후 DOM 업데이트 보장
         this.$nextTick(() => {
@@ -216,6 +228,9 @@ console.log(this.$route.query.canvasHeight);
   },
 
   initializeCanvas() {
+  
+
+    console.log("그림그리기")
   if (!this.roomInfo.originPhoto) {
     console.error('Cannot initialize canvas: originPhoto is undefined');
     return;
@@ -238,6 +253,7 @@ console.log(this.$route.query.canvasHeight);
   this.fixedDrawing = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height);
 
   this.canvas.addEventListener("mousedown", this.startDrawing.bind(this));
+																	
   this.canvas.addEventListener("mousemove", this.draw.bind(this));
   this.canvas.addEventListener("mouseup", this.stopDrawing.bind(this));
 
@@ -249,9 +265,6 @@ console.log(this.$route.query.canvasHeight);
   this.canvas.addEventListener("dragover", this.allowDrop);
   this.canvas.addEventListener("drop", this.dropSticker);
 },
-    fixDrawing() {
-      this.fixedDrawing = this.context.getImageData(0, 0, this.canvas.width, this.canvas.height); // 다른 사용자 작업 고정
-    },
 
     clearCanvas() {
       this.context.putImageData(this.fixedDrawing, 0, 0);  // 고정된 그림은 유지
