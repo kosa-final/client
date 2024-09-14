@@ -32,7 +32,7 @@ export default {
   computed: {
     ...mapState(['userId', 'userInfo']),  // userId로 로그인 상태를 확인
     isLoggedIn() {
-      return !!this.userId;  // userId가 있으면 로그인 상태로 간주
+      return this.userId !== null && this.userId !== '' && this.userId !== 'null';
     }
   },
   methods: {
@@ -61,6 +61,7 @@ export default {
   }
 };
 </script>
+
 
 
 <style scoped>

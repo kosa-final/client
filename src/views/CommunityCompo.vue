@@ -258,8 +258,9 @@ h2 {
 
 .photo-image {
   width: 100%;
-  height: auto;
+  height: 380px;
   cursor: pointer;
+  object-fit: contain;
 }
 
 .photo-item p {
