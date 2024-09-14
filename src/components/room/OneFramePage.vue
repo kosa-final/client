@@ -40,8 +40,8 @@
       <div class="modal-content">
         <p>방을 나가면 다시 못 돌아옵니다</p>
         <p>방을 나가시겠습니까?</p>
-        <button @click="leaveSession" class="modal-btn">네</button>
-        <button @click="hideLeaveModal" class="modal-btn">아니요</button>
+        <button @click="leaveSession" class="btn">네</button>
+        <button @click="hideLeaveModal" class="btn">아니요</button>
       </div>
     </div>
   </div>
@@ -58,7 +58,7 @@ axios.defaults.headers.post["Content-Type"] = "application/json";
 const APPLICATION_SERVER_URL = "https://4cutstudio.store/";
 
 export default {
-  name: "FourFramePage",
+  name: "OneFramePage",
   components: {
     UserVideo,
   },
@@ -90,7 +90,6 @@ export default {
   methods: {
     setFrameImageUrl() {		 
       this.frameImageUrl = require(`@/assets/frame/${this.selectedFrame}.png`);
-
     },
     
     joinSession() {
@@ -169,7 +168,7 @@ export default {
 
     this.$router.push({
       path: `/edit/${this.roomSession}`,
-      params: {
+      query: {
         roomSession: this.roomSession,
         userId: this.userId,
         isHost: this.isHost.toString() ,
@@ -179,8 +178,6 @@ export default {
 
     showLeaveModal() {
       this.isLeaveModalVisible = true;
-
-
     },
 
     hideLeaveModal() {
@@ -222,7 +219,6 @@ export default {
       );
       return response.data;
     },
-    
 										
     updateVideoStyles() {
       const videos = this.$el.querySelectorAll("video");
