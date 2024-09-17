@@ -127,6 +127,18 @@ export default {
         this.hasCapturedPhoto = true;
       });
 
+        // 방장이 세션을 떠났을 때 수신하는 신호
+  this.session.on('signal:leave-session', () => {
+    this.$router.push({
+      path: `/edit/${this.roomSession}`,
+      query: {
+        roomSession: this.roomSession,
+        userId: this.userId,
+        isHost: this.isHost.toString(),
+        photoImageUrl: this.photoImageUrl
+      }
+    });
+  });
       // 새로운 스트림이 생성되었을 때 처리
       this.session.on("streamCreated", ({ stream }) => {
         if (this.subscribers.length >= 3) {
@@ -180,24 +192,40 @@ export default {
       window.addEventListener("beforeunload", this.leaveSession);
     },
     leaveSession() {
-  if (this.session) this.session.disconnect();
-  this.session = undefined;
-  this.mainStreamManager = undefined;
-  this.publisher = undefined;
-  this.subscribers = [];
-  this.OV = undefined;
-  window.removeEventListener("beforeunload", this.leaveSession);
+  if (this.session) {
+    // 방장이 모든 사용자에게 신호 전송
+    this.session.signal({
+      to: [], // 모든 사용자에게 전송
+      type: 'leave-session' // 신호 타입
+    }).then(() => {
+      // 세션에서 방장 자신도 떠남
+      this.session = undefined;
+      this.mainStreamManager = undefined;
+      this.publisher = undefined;
+      this.subscribers = [];
+      this.OV = undefined;
+      window.removeEventListener("beforeunload", this.leaveSession);
 
-  // photoImageUrl을 함께 전달
-  this.$router.push({
-    path: `/edit/${this.roomSession}`,
-    query: {
-      roomSession: this.roomSession,
-      userId: this.userId,
-      isHost: this.isHost.toString(),  // boolean 값을 문자열로 변환하여 전달
-      photoImageUrl: this.photoImageUrl // 캡처된 사진 URL을 전달
-    }
-  });
+      // 방장은 바로 edit 페이지로 이동
+      this.$router.replace({
+        path: `/edit/${this.roomSession}`,
+        query: {
+          roomSession: this.roomSession,
+          userId: this.userId,
+          isHost: this.isHost.toString(),
+          canvasWidth: 310,
+          canvasHeight: 800,
+          photoImageUrl: this.photoImageUrl,
+        },
+      }).catch(err => {
+        if (err.name !== 'NavigationDuplicated') {
+          console.error(err);
+        }
+      });
+    }).catch(error => {
+      console.error("Error sending signal: ", error);
+    });
+  }
 },
 
 
