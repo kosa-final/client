@@ -121,6 +121,9 @@ export default {
       this.webSocket.onmessage = (message) => {
         const data = JSON.parse(message.data);
 
+        if (data.type === 'SHOW_ALERT') {
+            alert("그림을 그려주세요!");  // 자동으로 알림 표시
+    }
         if (data.type === 'SESSION_ID') {
           this.userId = data.userId;
           console.log('Session ID received: ', this.userId);
@@ -176,10 +179,6 @@ export default {
           this.currentTurnNickname = data.nickname;
           this.isLastTurn = data.isLastTurn;
 
-          if (this.isMyTurn) {
-            alert('그림을 그려주세요!');
-            this.fixDrawing();
-          }
         } else if (data.type === 'ERROR') {
           alert(data.message);
         }
