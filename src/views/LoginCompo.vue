@@ -2,7 +2,6 @@
   <div class="login-container">
     <div class="largeTitle">LETS'S GET STARTED!</div>
     
-
     <!-- 일반 로그인 버튼 -->
     <button @click="goToGeneralLogin" class="general-login-button">
       일반 로그인
@@ -10,7 +9,6 @@
 
     <!-- 카카오 로그인 버튼 -->
     <button v-if="!accessToken" @click="loginWithKakao" class="kakao-login-button"></button>
-    
     
   </div>
 </template>
@@ -96,7 +94,8 @@ export default {
   background-color: #ffffff;
   color: #DB574D;
   font-size: 20px;
-  border: 2px solid #DB574D;
+  border: 1px solid #DB574D;
+  border-radius: 10px;
   cursor: pointer;
   margin-bottom: 20px;
 }

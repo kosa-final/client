@@ -293,6 +293,8 @@ export default {
       this.context = this.canvas.getContext("2d");
       this.canvas.width = this.canvasWidth;
       this.canvas.height = this.canvasHeight;
+      console.log("width" + this.canvas.width);
+      console.log("height" + this.canvas.height);
 
       const image = new Image();
       image.crossOrigin = "Anonymous";
@@ -477,8 +479,6 @@ export default {
 
 canvas {
   position: relative;
-  width: 600px;
-  height: 800px;
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;

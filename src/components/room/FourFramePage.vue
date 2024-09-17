@@ -25,23 +25,19 @@
         </div>
       </div>
       <div class="right-panel">
-        <div id="session-header">
+        <div>
           <p class="middleTitle">방 이름</p>
-          <p>{{ roomInfo.roomName }}</p>
+          <p class="output">{{ roomInfo.roomName }}({{ userRole }})</p>
           <p class="middleTitle">초대코드</p>
-          <p>{{ roomSession }}</p>
-          <p class="middleTitle">회원유형</p>
-          <p>{{ userRole }}</p>
+          <p class="output">{{ roomSession }} <button class="btn" @click="copyToClipboard">복사</button></p>
           <p class="middleTitle">안내사항</p>
           <p>1. 입장 순서대로 프레임이 선정됩니다</p>
           <p>2. 인원이 다 차면 자동으로 촬영 버튼이 활성화됩니다</p>
-          <p>3. 인원이 다 차고 30초 이내에 사진을 찍어야 합니다</p>
-          <p>4. 30초 이내에 사진을 못 찍을 경우 자동으로 사진이 찍힙니다</p>
-          <p>5. 사진 촬영은 방장만 가능합니다</p>
+          <p>3. 사진 촬영은 방장만 가능합니다</p>
+        </div>
           <button class="btn-rounded" @click="capturePhotoOrigin" :disabled="!isCaptureButtonEnabled || hasCapturedPhoto">
             사진촬영
           </button>
-        </div>
       </div>
     </div>
     <div class="center">
@@ -101,6 +97,22 @@ export default {
     },
   },
   methods: {
+    copyToClipboard() {
+      const textToCopy = this.roomSession;
+
+      const tempInput = document.createElement("textarea");
+      tempInput.value = textToCopy;
+      document.body.appendChild(tempInput);
+
+      tempInput.select();
+      tempInput.setSelectionRange(0, 99999); // 모바일 브라우저 대응
+      document.execCommand("copy");
+
+      document.body.removeChild(tempInput);
+
+      alert("복사되었습니다: " + textToCopy);
+    },
+
     setFrameImageUrl() {
       this.frameImageUrl = require(`@/assets/frame/${this.selectedFrame}.png`);
     },
@@ -401,6 +413,13 @@ export default {
 
 .btn {
   margin-right: 10px;
+}
+
+.btn-rounded:disabled {
+  background-color: #c0c0c0;
+  border: none;
+  color: #6c757d;
+  cursor: not-allowed;
 }
 
 </style>

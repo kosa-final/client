@@ -29,7 +29,7 @@
           <p class="middleTitle">방 이름</p>
           <p class="output">{{ roomInfo.roomName }}({{ userRole }})</p>
           <p class="middleTitle">초대코드</p>
-          <p class="output">{{ roomSession }}</p>
+          <p class="output">{{ roomSession }} <p class="output">{{ roomSession }} <button class="btn" @click="copyToClipboard">복사</button></p>
           <p class="middleTitle">안내사항</p>
           <p>1. 입장 순서대로 프레임이 선정됩니다</p>
           <p>2. 인원이 다 차면 자동으로 촬영 버튼이 활성화됩니다</p>
@@ -98,6 +98,22 @@ export default {
     },
   },
   methods: {
+    copyToClipboard() {
+      const textToCopy = this.roomSession;
+
+      const tempInput = document.createElement("textarea");
+      tempInput.value = textToCopy;
+      document.body.appendChild(tempInput);
+
+      tempInput.select();
+      tempInput.setSelectionRange(0, 99999); // 모바일 브라우저 대응
+      document.execCommand("copy");
+
+      document.body.removeChild(tempInput);
+
+      alert("복사되었습니다: " + textToCopy);
+    },
+
     setFrameImageUrl() {		 
       this.frameImageUrl = require(`@/assets/frame/${this.selectedFrame}.png`);
    
@@ -183,7 +199,7 @@ leaveSession() {
       roomSession: this.roomSession,
       userId: this.userId,
       isHost: this.isHost.toString(),
-      canvasWidth: 300,  // 캔버스 크기 전달
+      canvasWidth: 310,  // 캔버스 크기 전달
       canvasHeight: 800,  // 캔버스 높이 전달
       photoImageUrl: this.photoImageUrl // 캡처된 사진 URL을 전달
     }

@@ -408,4 +408,11 @@ leaveSession() {
 .modal-btn {
   margin: 10px;
 }
+
+.btn-rounded:disabled {
+  background-color: #c0c0c0;
+  border: none;
+  color: #6c757d;
+  cursor: not-allowed;
+}
 </style>
