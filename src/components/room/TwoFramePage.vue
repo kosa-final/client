@@ -259,7 +259,7 @@ leaveSession() {
 
       try {
         const canvas = await html2canvas(element, {
-          width: 300,   
+          width: 310,   
           height: 800,  
         });
         const imageData = canvas.toDataURL("image/png");
@@ -336,7 +336,7 @@ leaveSession() {
 
 .photo-origin {
   position: relative;
-  width: 300px; /* 전체 프레임의 너비 */
+  width: 310px; /* 전체 프레임의 너비 */
   height: 800px; /* 전체 프레임의 높이 */
   background-size: contain;
   background-position: center;
