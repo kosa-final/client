@@ -43,20 +43,21 @@
     <div class="center">
       <button class="btn-large" @click="showLeaveModal">사진 꾸미러가기</button>
     </div>
-        <!-- 확인 모달 -->
-        <ModalComponent
-      v-if="isLeaveModalVisible"
-      messageType="confirm"
-      message="다시 들어올 수 없습니다" 
-      @close="showConfirmModal = false"
-      :onConfirm="leaveSession"
-    />
+
+    <!-- 방 나가기 모달 -->
+    <div v-if="isLeaveModalVisible" class="modal">
+      <div class="modal-content">
+        <p>방을 나가면 다시 못 돌아옵니다</p>
+        <p>방을 나가시겠습니까?</p>
+        <button @click="leaveSession" class="btn">네</button>
+        <button @click="hideLeaveModal" class="btn">아니요</button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import axios from "axios";
-import ModalComponent from '@/components/ModalComponent.vue'; // 모달 컴포넌트 임포트
 import { OpenVidu } from "openvidu-browser";
 import UserVideo from "@/components/video/UserVideo";
 import html2canvas from "html2canvas";
@@ -68,7 +69,6 @@ export default {
   name: "FourFramePage",
   components: {
     UserVideo,
-    ModalComponent
   },
   props: ['roomInfo'],
   data() {
