@@ -116,7 +116,7 @@ export default {
         return;
       }
 
-      this.webSocket = new WebSocket(`ws://localhost:8080/ws/turn?nickname=${encodeURIComponent(this.localUserNickname)}`);
+      this.webSocket = new WebSocket(`ws://4cutstudio.store/ws/turn?nickname=${encodeURIComponent(this.localUserNickname)}`);
 
       this.webSocket.onmessage = (message) => {
         const data = JSON.parse(message.data);
