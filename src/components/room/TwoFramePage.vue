@@ -129,25 +129,33 @@ export default {
         this.hasCapturedPhoto = true;								   
       });
 
-        // 방장이 세션을 떠났을 때 수신하는 신호
-  this.session.on('signal:leave-session', () => {
-    this.$router.push({
-  path: `/edit/${this.roomSession}`,
-  query: {
-    roomSession: this.roomSession,
-    userId: this.userId,
-    isHost: this.isHost.toString(),
-    canvasWidth: 310,
-    canvasHeight: 800,
-    photoImageUrl: this.photoImageUrl,
-  }
-}).catch(err => {
-  if (err.name !== 'NavigationDuplicated') {
-    console.error(err);
-  }
+      this.session.on('signal:leave-session', () => {
+  // OpenVidu 세션 종료
+  this.session.disconnect();
+  this.session = undefined;
+  this.mainStreamManager = undefined;
+  this.publisher = undefined;
+  this.subscribers = [];
+  this.OV = undefined;
+
+  // 페이지 이동
+  this.$router.push({
+    path: `/edit/${this.roomSession}`,
+    query: {
+      roomSession: this.roomSession,
+      userId: this.userId,
+      isHost: this.isHost.toString(),
+      canvasWidth: 310,
+      canvasHeight: 800,
+      photoImageUrl: this.photoImageUrl,
+    }
+  }).catch(err => {
+    if (err.name !== 'NavigationDuplicated') {
+      console.error(err);
+    }
+  });
 });
 
-  });
 
       // 새로운 스트림이 생성되었을 때 처리
       this.session.on("streamCreated", ({ stream }) => {

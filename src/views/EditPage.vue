@@ -134,6 +134,9 @@ export default {
         if (data.type === 'CLEAR_CANVAS' && data.userId !== this.userId) {
           this.restoreCanvas();
         }
+        if (data.type === 'END_SESSION') {
+        this.disconnectOpenViduSession();  // OpenVidu 연결 종료
+        }
         if (data.type === 'DRAW') {
           this.context.strokeStyle = data.color;
           this.context.lineWidth = data.width;
@@ -153,26 +156,30 @@ export default {
         }
 
         if (data.type === 'PHOTO_SAVED') {
-          if (this.isHost) {
+        if (this.isHost) {
+            // 사진이 저장되면 모든 사용자의 연결을 종료하는 로직 추가
+            this.disconnectOpenViduSession();
+            
             this.$router.push({
-              name: 'Save',
-              params: {
-                roomSession: this.roomSession,
-                imageUrl: encodeURIComponent(data.imageUrl),
-                userId: this.userId,
-                isHost: this.isHost,
-                sessionId: this.userId
-              }
+                name: 'Save',
+                params: {
+                    roomSession: this.roomSession,
+                    imageUrl: encodeURIComponent(data.imageUrl),
+                    userId: this.userId,
+                    isHost: this.isHost,
+                    sessionId: this.userId
+                }
             }).catch(err => {
-              if (err.name !== 'NavigationDuplicated') {
-                console.error(err);
-              }
+                if (err.name !== 'NavigationDuplicated') {
+                    console.error(err);
+                }
             });
-          } else {
+        } else {
             alert('사진이 완성되었습니다');
+            this.disconnectOpenViduSession(); // OpenVidu 연결 종료
             this.$router.push({ name: 'Home' });
-          }
         }
+    }
 
         if (data.type === 'TURN') {
           console.log("유저 턴 확인 data.userId:",data.userId)
@@ -261,7 +268,19 @@ export default {
         this.context.drawImage(img, 0, 0);
       };
     },
+    disconnectOpenViduSession() {
+  if (this.session) {
+    this.session.disconnect();
+    this.session = undefined;
+    this.mainStreamManager = undefined;
+    this.publisher = undefined;
+    this.subscribers = [];
+    this.OV = undefined;
+  }
+  window.removeEventListener("beforeunload", this.leaveSession);
+}
 
+,
     restoreOtherUsersDrawing() {
       Object.keys(this.userActions).forEach(userId => {
         if (userId !== this.userId) {
@@ -394,27 +413,37 @@ export default {
 
       event.preventDefault();
     },
-
     async saveCanvas() {
-      const imageBase64 = this.canvas.toDataURL('image/png');
-      const photoData = {
-        originPhoto: imageBase64,
-        roomId: this.roomInfo.roomId
-      };
+  const imageBase64 = this.canvas.toDataURL('image/png');
+  const photoData = {
+    originPhoto: imageBase64,
+    roomId: this.roomInfo.roomId
+  };
 
-      try {
-        const response = await axios.post(`${process.env.VUE_APP_BACKEND_URL}/photo/complete?roomSession=${this.roomSession}`, photoData, {
-          headers: { 'Content-Type': 'application/json' }
-        });
+  try {
+    const response = await axios.post(`${process.env.VUE_APP_BACKEND_URL}/photo/complete?roomSession=${this.roomSession}`, photoData, {
+      headers: { 'Content-Type': 'application/json' }
+    });
 
-        this.webSocket.send(JSON.stringify({
-          type: 'PHOTO_SAVED',
-          imageUrl: response.data
-        }));
-      } catch (error) {
-        console.error('Error uploading image to server:', error.response ? error.response.data : error.message);
-      }
-    },
+    this.webSocket.send(JSON.stringify({
+      type: 'PHOTO_SAVED',
+      imageUrl: response.data
+    }));
+
+    // 모든 사용자에게 세션 종료 신호 전송
+    this.session.signal({
+      to: [], // 모든 사용자에게 전송
+      type: 'leave-session' // 신호 타입
+    }).then(() => {
+      // 방장도 세션을 종료
+      this.disconnectOpenViduSession();
+    }).catch(error => {
+      console.error('Error sending signal to leave session: ', error);
+    });
+  } catch (error) {
+    console.error('Error uploading image to server:', error.response ? error.response.data : error.message);
+  }
+},
 
     dragStart(event) {
       this.draggingSticker = event.target;
