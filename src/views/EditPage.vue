@@ -175,6 +175,8 @@ export default {
         }
 
         if (data.type === 'TURN') {
+          console.log("유저 턴 확인 data.userId:",data.userId)
+          console.log("유저 턴 확인 data.userId:",this.userId)
           this.$set(this, 'isMyTurn', data.userId === this.userId);
           this.currentTurnNickname = data.nickname;
           this.isLastTurn = data.isLastTurn;
