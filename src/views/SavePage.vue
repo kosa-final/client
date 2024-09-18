@@ -118,7 +118,7 @@ listenForUpdates() {
     }
   },
   initializeWebSocket() {
-  this.webSocket = new WebSocket(`ws://4cutstudio.store/ws/save?roomSession=${encodeURIComponent(this.roomSession)}&sessionId=${encodeURIComponent(this.sessionId)}`);
+  this.webSocket = new WebSocket(`wss://4cutstudio.store/ws/save?roomSession=${encodeURIComponent(this.roomSession)}&sessionId=${encodeURIComponent(this.sessionId)}`);
 
   this.webSocket.onopen = () => {
     console.log("WebSocket 연결 성공");
