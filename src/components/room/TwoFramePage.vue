@@ -29,7 +29,7 @@
           <p class="middleTitle">방 이름</p>
           <p class="output">{{ roomInfo.roomName }}({{ userRole }})</p>
           <p class="middleTitle">초대코드</p>
-          <p class="output">{{ roomSession }} <p class="output">{{ roomSession }} <button class="btn" @click="copyToClipboard">복사</button></p>
+          <p class="output">{{ roomSession }} <button class="btn" @click="copyToClipboard">복사</button></p>
           <p class="middleTitle">안내사항</p>
           <p>1. 입장 순서대로 프레임이 선정됩니다</p>
           <p>2. 인원이 다 차면 자동으로 촬영 버튼이 활성화됩니다</p>
@@ -447,5 +447,12 @@ leaveSession() {
 
 .btn {
   margin-right: 10px;
+}
+
+.btn-rounded:disabled {
+  background-color: #c0c0c0;
+  border: none;
+  color: #6c757d;
+  cursor: not-allowed;
 }
 </style>

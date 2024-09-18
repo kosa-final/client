@@ -62,7 +62,7 @@
   methods: {
     // 공개 여부 설정
     setVisibility(isPublic) {
-      this.isPublic = isPublic;
+      this.isPublic = isPublic || true;
     },
 
     // WebSocket을 통해 변경 사항 전송
@@ -78,9 +78,7 @@
     console.log('Broadcasting changes: ', payload); // 로그로 확인
     this.webSocket.send(JSON.stringify(payload));
   }
-}
-
-,
+},
 
 listenForUpdates() {
   this.webSocket.onmessage = (message) => {
@@ -105,26 +103,23 @@ listenForUpdates() {
     console.warn("WebSocket 연결이 닫힘");
   };
 },
-
-
-
-    async saveCompletePhoto() {
-      const payload = {
-        isPublic: this.isPublic ? 'true' : 'false',
-        note: this.memo
-      };
-      try {
-        await axios.post(`${process.env.VUE_APP_BACKEND_URL}/photo/final?roomSession=${this.roomSession}`, payload);
-        alert('사진이 성공적으로 저장되었습니다!');
-        this.$router.push({ name: 'Home' });
-      } catch (error) {
-        alert('사진 저장 중 오류가 발생했습니다.');
-        console.error('Error:', error);
-      }
-    },
-    initializeWebSocket() {
+  async saveCompletePhoto() {
+    const payload = {
+      isPublic: this.isPublic ? 'true' : 'false',
+      note: this.memo
+    };
+    try {
+      await axios.post(`${process.env.VUE_APP_BACKEND_URL}/photo/final?roomSession=${this.roomSession}`, payload);
+      alert('사진이 성공적으로 저장되었습니다!');
+      this.$router.push({ name: 'Home' });
+    } catch (error) {
+      alert('사진 저장 중 오류가 발생했습니다.');
+      console.error('Error:', error);
+    }
+  },
+  initializeWebSocket() {
   this.webSocket = new WebSocket(`ws://localhost:8080/ws/save?roomSession=${encodeURIComponent(this.roomSession)}&sessionId=${encodeURIComponent(this.sessionId)}`);
-  
+
   this.webSocket.onopen = () => {
     console.log("WebSocket 연결 성공");
     this.broadcastChanges(); // 연결 후 상태 전송
@@ -142,16 +137,11 @@ listenForUpdates() {
   };
 
   this.listenForUpdates();  // WebSocket 수신 대기
-}
+  }
   },
-
-
 }
-
-
-  </script>
+</script>
   
-
 <style>
 .main-container {
   position: relative;
@@ -172,12 +162,15 @@ listenForUpdates() {
 .image-frame {
   margin-right: 180px;
   margin-top: 30px;
+  width: 600px;
+  height: 800px;
+  display: flex;
+  justify-content: center;
+  align-items: center; 
 }
 
 .saved-image {
   position: relative;
-  width: 600px;
-  height: 800px;
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;

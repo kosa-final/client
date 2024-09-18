@@ -415,4 +415,5 @@ leaveSession() {
   color: #6c757d;
   cursor: not-allowed;
 }
+
 </style>

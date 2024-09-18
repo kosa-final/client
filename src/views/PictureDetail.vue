@@ -249,12 +249,15 @@ margin-top: 20px;
 .left-side {
 margin-right: 180px;
 margin-top: 30px;
+width: 600px;
+height: 800px;
+display: flex;
+justify-content: center;
+align-items: center; 
 }
 
 .photo-image {
 position: relative;
-width: 600px;
-height: 800px;
 background-size: contain;
 background-position: center;
 background-repeat: no-repeat;
