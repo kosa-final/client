@@ -56,8 +56,8 @@ export default {
   name: "MakePage",
   data() {
     return {
-      // userId: localStorage.getItem("userId"),
-      userId: Math.floor(Math.random() * 100),
+      userId: localStorage.getItem("userId"),
+      // userId: Math.floor(Math.random() * 100),
       roomName: "",
       roomSession: "",
       userCount: 1,
